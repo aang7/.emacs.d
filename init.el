@@ -42,6 +42,7 @@
       org-bullets
       iy-go-to-char
       helm
+      autopair
       auto-complete
       ace-jump-mode
       twittering-mode
@@ -106,7 +107,7 @@
 (global-set-key (kbd "C-c a") 'auto-complete-mode)
 
 
-(add-to-list 'load-path "~/.emacs.d/elpa/")
+(add-to-list 'load-path "~/.emacs.d/settings/")
 (require 'powerline)
 ;;(setq powerline-color1 "grey22")
 ;;(setq powerline-color2 "grey40")
