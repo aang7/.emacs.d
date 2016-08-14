@@ -2,6 +2,13 @@
 ;;SYNCRONZE CONFIGURATION BETWEEN COMPUTERS
 
 ;;Not warning windows
+
+;; Added by Package.el.  This must come before configurations of
+;; installed packages.  Don't delete this line.  If you don't want it,
+;; just comment it out by adding a semicolon to the start of the line.
+;; You may delete these explanatory comments.
+(package-initialize)
+
 (setq warning-minimum-level :emergency)
 
 ;;No more start screen buffer
@@ -42,6 +49,7 @@
       org-bullets
       iy-go-to-char
       helm
+      autopair
       auto-complete
       ace-jump-mode
       twittering-mode
@@ -106,7 +114,7 @@
 (global-set-key (kbd "C-c a") 'auto-complete-mode)
 
 
-(add-to-list 'load-path "~/.emacs.d/elpa/")
+(add-to-list 'load-path "~/.emacs.d/settings/")
 (require 'powerline)
 ;;(setq powerline-color1 "grey22")
 ;;(setq powerline-color2 "grey40")
