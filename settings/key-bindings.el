@@ -6,6 +6,9 @@
 (global-set-key (kbd "C-c C-g") 'mc/unmark-previous-like-this)
 (global-set-key (kbd "C-c C-n") 'mc/unmark-next-like-this)
 
+;;Avy
+(global-set-key (kbd "C-:") 'avy-goto-char)
+
 ;;iy-go-to-char config
 ;;(require 'iy-go-to-char)
 (global-set-key (kbd "M-m") 'iy-go-to-char)
@@ -28,10 +31,10 @@
 (global-set-key (kbd "s-SPC")  'mode-line-other-buffer)
 
 (global-set-key (kbd "C-c r") 'recompile)
-;;(global-set-key (kbd "C-x c") 'compile)
+(global-set-key (kbd "C-x c") 'compile)
 
 ;;Helm
-;;(require 'helm-config)
+;(require 'helm-config)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-x b") 'helm-buffers-list)
 (global-set-key (kbd "C-, .") 'helm-find)
@@ -47,7 +50,11 @@
 (global-set-key (kbd "<s-right>") 'windmove-right)
 (global-set-key (kbd "<s-left>") 'windmove-left)
 (global-set-key (kbd "<s-up>") 'windmove-up)
-(global-set-key (kbd "<s-down>") 'windmove-down)a
+(global-set-key (kbd "<s-down>") 'windmove-down)
 
-
+;;; buffer-move
+(global-set-key (kbd "<M-s-down>")   'buf-move-down)
+(global-set-key (kbd "<M-s-left>")   'buf-move-left)
+(global-set-key (kbd "<M-s-right>")  'buf-move-right)
+(global-set-key (kbd "<M-s-up>")  'buf-move-up)
 (provide 'key-bindings)
