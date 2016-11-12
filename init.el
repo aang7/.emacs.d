@@ -1,32 +1,25 @@
 ;;;TRYING TO CREATE A NEW INIT FILE EMACS FOR
 ;;;SYNCRONZE CONFIGURATION BETWEEN COMPUTERS
 (package-initialize)
-;;Not warning windows
-(setq warning-minimum-level :emergency)
-
-;;No more start screen buffer
-(setq inhibit-startup-message t)
-
-;;quit toolbar
-(tool-bar-mode -1)
+;;(setq warning-minimum-level :emergency);;Not warning windows
+(setq inhibit-startup-message t);;No more start screen buffer
 
 ;; Set path to dependencies
 (setq settings-dir
       (expand-file-name "settings" user-emacs-directory))
 
-;; Set up load path
-(add-to-list 'load-path settings-dir)
-;(add-to-list 'load-path site-lisp-dir)
+(add-to-list 'load-path settings-dir);; Set up load path
+(add-to-list 'load-path "~/.emacs.d/elpa/theme-changer-2.1.0");;Theme changer loadPath
 
 ;; Keep emacs Custom-settings in separate file
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file)
 
-;;SET THEME folder
+;;Set Theme Folder
 (setq theme-dir
       (expand-file-name "themes" user-emacs-directory))
 (add-to-list 'custom-theme-load-path theme-dir)
-(load-theme 'seti t)
+
 
 ;; Save point position between sessions
 (require 'saveplace)
@@ -57,6 +50,8 @@
       org-bullets
       avy
       flycheck
+      swiper
+      smartparens
       )))
 (condition-case nil
     (init--install-packages)
@@ -76,41 +71,30 @@
 (require 'auto-indent-mode)
 (require 'flycheck)
 (require 'yasnippet)
-
-;;Flycheck
-(global-flycheck-mode)
-
-(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-;;; General configs
+(require 'buffer-move)
+;;-----Global Modes------------------------------------
+(global-flycheck-mode);;Flycheck
+(yas-global-mode t) ;; Yasnipet ---
+(global-hl-line-mode)
+(ivy-mode 1)
+(tool-bar-mode -1) ;;quit toolbar
 (show-paren-mode t)
 (scroll-bar-mode -1)
 (electric-indent-mode 1)
-(electric-pair-mode 1)
+;;(electric-pair-mode 1)
+(smartparens-global-mode t)
 
-;;Need to put this in defuns folder
-(defun open-line-above ()
-  (interactive)
-  (beginning-of-line)
-  (newline)
-  (forward-line -1)
-  (indent-for-tab-command))
+;;--------Add Hooks-------
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+(add-hook 'term-mode-hook (lambda()
+        (setq yas-dont-activate t)))
 
-(global-set-key (kbd "<C-s-return>") 'open-line-above)
+;;;;;Org mode;;;;
+(require 'ox-latex)
+(setq org-export-latex-listings 'minted)
+;(add-to-list 'org-export-latex-packages-alist '("" "minted"))
+(setq org-src-fontify-natively t) ;Can see higlighting in org mode file
 
-(defun open-line-below ()
-  (interactive)
-  (end-of-line)
-  (newline)
-  (indent-for-tab-command))
-
-(global-set-key (kbd "<C-return>") 'open-line-below)
-
-
-;;Auto indent
-(define-key global-map (kbd "RET") 'newline-and-indent)
-
-;; Yasnipet --- turn on globally
-(yas-global-mode t)
 
 ;;Auto-complete Mode
 (require 'auto-complete-config)
@@ -118,10 +102,9 @@
 (ac-config-default)
 (ac-linum-workaround)
 
-(set-face-background 'ac-candidate-face "grey7")
-(set-face-underline 'ac-candidate-face "darkgray")
-(set-face-background 'ac-selection-face "dark slate gray")
-(global-set-key (kbd "C-c a") 'auto-complete-mode)
+;;(set-face-background 'ac-candidate-face "grey7")
+;;(set-face-underline 'ac-candidate-face "darkgray")
+;;(set-face-background 'ac-selection-face "dark slate gray")
 
 ; Lets define a function which initializes auto-complete-c-headers and gets called for c/c++ hooks
 (defun my:ac-c-header-init ()
@@ -134,21 +117,22 @@
 (add-hook 'c-mode-hook 'my:ac-c-header-init)
 
 ;;reveal-js
-(add-to-list 'load-path "~/.emacs.d/elpa/org-reveal")
-(require 'ox-reveal)
-(setq org-reveal-root "file:///home/abel/.emacs.d/elpa/reveal.js/")
+;; (add-to-list 'load-path "~/.emacs.d/elpa/org-reveal")
+;; (require 'ox-reveal)
+;; (setq org-reveal-root "file:///home/abel/.emacs.d/elpa/reveal.js/")
 
 (add-to-list 'load-path "~/.emacs.d/settings/")
-(require 'powerline)
+;;(require 'powerline)
 ;;(setq powerline-color1 "grey22")
 ;;(setq powerline-color2 "grey40")
 (require 'ox-ioslide)
 
-(global-hl-line-mode)
+
 ;;Jedi for python ac
 (add-hook 'python-mode-hook 'jedi:setup)
 (add-hook 'python-mode-hook 'jedi:ac-setup)
 
+;;; recentf -- open recent filesmeme
 (defun ido-recentf-open ()
   "Use `ido-completing-read' to \\[find-file] a recent file"
   (interactive)
@@ -156,20 +140,44 @@
       (message "Opening file...")
     (message "Aborting")))
 
-
-;;; recentf -- open recent files
 (require 'recentf)
-;; get rid of `find-file-read-only' and replace it with something
-;; more useful.
 (global-set-key (kbd "C-x C-r") 'ido-recentf-open)
-;; enable recent files mode.
-(recentf-mode t)
-; 10 files ought to be enough.
-(setq recentf-max-saved-items 10)
+(recentf-mode t);; enable recent files mode.
+(setq recentf-max-saved-items 10); 10 files ought to be enough.
 
-(require 'buffer-move)
+;;ivy
+(setq ivy-use-virtual-buffers t)
 
-;;; switching between themes -- testing
+(require 'theme-changer)
+(setq calendar-location-name "Dallas, TX") 
+(setq calendar-latitude 32.85)
+(setq calendar-longitude -96.85)
+(change-theme 'spolsky 'spolsky)
+
+(defun open-line-above ()
+  (interactive)
+  (beginning-of-line)
+  (newline)
+  (forward-line -1)
+  (indent-for-tab-command))
 
 
+(defun open-line-below ()
+  (interactive)
+  (end-of-line)
+  (newline)
+  (indent-for-tab-command))
+
+;;Para lo de R
+(org-babel-do-load-languages
+   'org-babel-load-languages
+   '((R . t)
+     (org . t)
+     (latex . t)
+     (emacs-lisp . t)
+     (gnuplot . t)))
+
+
+
+(require 'smartparens-config)
 (require 'key-bindings)

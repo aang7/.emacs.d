@@ -57,4 +57,45 @@
 (global-set-key (kbd "<M-s-left>")   'buf-move-left)
 (global-set-key (kbd "<M-s-right>")  'buf-move-right)
 (global-set-key (kbd "<M-s-up>")  'buf-move-up)
+;; i dont know why after press C-z emacs dont respond
+(global-unset-key (kbd "C-z"))
+
+(global-set-key (kbd "C-c a") 'auto-complete-mode)
+
+;;Auto indent
+(define-key global-map (kbd "RET") 'newline-and-indent)
+;;Editing defuns
+(global-set-key (kbd "<C-s-return>") 'open-line-above)
+(global-set-key (kbd "<C-return>") 'open-line-below)
+
+;;; Swipper and ivy for searching regexp
+(global-set-key "\C-s" 'swiper)
+(global-set-key (kbd "C-c C-r") 'ivy-resume)
+(global-set-key (kbd "<f6>") 'ivy-resume)
+;;(global-set-key (kbd "M-x") 'counsel-M-x)
+;;(global-set-key (kbd "C-x C-f") 'counsel-find-file)
+(global-set-key (kbd "<f1> f") 'counsel-describe-function)
+(global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+(global-set-key (kbd "<f1> l") 'counsel-load-library)
+(global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+(global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+(global-set-key (kbd "C-c g") 'counsel-git)
+(global-set-key (kbd "C-c j") 'counsel-git-grep)
+(global-set-key (kbd "C-c k") 'counsel-ag)
+(global-set-key (kbd "C-x l") 'counsel-locate)
+(global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+(define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+
+;;SmartParens
+;; (global-set-key (kbd "C-c (") 'wrap-with-brackets)
+;; (global-set-key (kbd "C-c [" ) 'wrap-with-brackets)
+;; (global-set-key (kbd "C-c {" ) 'wrap-with-braces)
+;; (global-set-key (kbd "C-c '" ) 'wrap-with-single-quotes)
+;; (global-set-key (kbd "C-c \"") 'wrap-with-double-quotes)
+;; (global-set-key (kbd "C-c _" ) 'wrap-with-underscores)
+;; (global-set-key (kbd "C-c `" ) 'wrap-with-back-quotes)
+
+(global-set-key (kbd "M-[") 'sp-backward-unwrap-sexp)
+(global-set-key (kbd "M-]") 'sp-unwrap-sexp)
+
 (provide 'key-bindings)
