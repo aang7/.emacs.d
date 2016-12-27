@@ -1,5 +1,9 @@
-;;;TRYING TO CREATE A NEW INIT FILE EMACS FOR
-;;;SYNCRONZE CONFIGURATION BETWEEN COMPUTERS
+;;Ang config
+(require 'package)
+
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+
 (package-initialize)
 ;;(setq warning-minimum-level :emergency);;Not warning windows
 (setq inhibit-startup-message t);;No more start screen buffer
@@ -20,44 +24,49 @@
       (expand-file-name "themes" user-emacs-directory))
 (add-to-list 'custom-theme-load-path theme-dir)
 
+;; Write backup files to own directory
+(setq backup-directory-alist
+      `(("." . ,(expand-file-name
+		 (concat user-emacs-directory "backups")))))
 
 ;; Save point position between sessions
 (require 'saveplace)
 (setq-default save-place t)
 (setq save-place-file (expand-file-name ".places" user-emacs-directory))
 
-(require 'setup-package)
+;;(require 'setup-package)
 
-;; ;; Install extensions if they're missing
- (defun init--install-packages ()
-   (packages-install
-    '(yasnippet
-      dash
-      expand-region
-      multiple-cursors
-      org-bullets
-      iy-go-to-char
-      helm
-      autopair
-      auto-complete
-      ace-jump-mode
-      twittering-mode
-      use-package
-      php-mode
-      multi-web-mode
-      ace-window
-      auto-indent-mode
-      org-bullets
-      avy
-      flycheck
-      swiper
-      smartparens
-      )))
-(condition-case nil
-    (init--install-packages)
-  (error
-   (package-refresh-contents)
-   (init--install-packages)))
+;; Install extensions if they're missing
+;;  (defun init--install-packages ()
+;;    (packages-install
+;;     '(yasnippet
+;;       dash
+;;       expand-region
+;;       multiple-cursors
+;;       org-bullets
+;;       iy-go-to-char
+;;       helm
+;;       autopair
+;;       auto-complete
+;;       ace-jump-mode
+;;       twittering-mode
+;;       use-package
+;;       php-mode
+;;       multi-web-mode
+;;       ace-window
+;;       auto-indent-mode
+;;       org-bullets
+;;       avy
+;;       flycheck
+;;       swiper
+;;       smartparens
+;;       undo-tree
+;;       )))
+;; (condition-case nil
+;;     (init--install-packages)
+;;   (error
+;;    (package-refresh-contents)
+;;    (init--install-packages)))
 
 ;; Setup packages
 (require 'multiple-cursors)
@@ -72,24 +81,27 @@
 (require 'flycheck)
 (require 'yasnippet)
 (require 'buffer-move)
-;;-----Global Modes------------------------------------
-(global-flycheck-mode);;Flycheck
-(yas-global-mode t) ;; Yasnipet ---
+
+;;Global modes
+(global-flycheck-mode)
+(yas-global-mode t)
 (global-hl-line-mode)
 (ivy-mode 1)
-(tool-bar-mode -1) ;;quit toolbar
+(tool-bar-mode -1)
 (show-paren-mode t)
 (scroll-bar-mode -1)
 (electric-indent-mode 1)
+(column-number-mode t)
 ;;(electric-pair-mode 1)
 (smartparens-global-mode t)
 
-;;--------Add Hooks-------
+
+;;Add Hooks
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 (add-hook 'term-mode-hook (lambda()
         (setq yas-dont-activate t)))
 
-;;;;;Org mode;;;;
+;;org mode
 (require 'ox-latex)
 (setq org-export-latex-listings 'minted)
 ;(add-to-list 'org-export-latex-packages-alist '("" "minted"))
@@ -102,9 +114,12 @@
 (ac-config-default)
 (ac-linum-workaround)
 
-;;(set-face-background 'ac-candidate-face "grey7")
-;;(set-face-underline 'ac-candidate-face "darkgray")
-;;(set-face-background 'ac-selection-face "dark slate gray")
+
+(set-face-background 'ac-candidate-face "grey7")
+(set-face-underline 'ac-candidate-face "darkgray")
+(set-face-background 'ac-selection-face "purple4")
+(set-face-foreground 'ac-candidate-face "green")
+
 
 ; Lets define a function which initializes auto-complete-c-headers and gets called for c/c++ hooks
 (defun my:ac-c-header-init ()
@@ -152,7 +167,7 @@
 (setq calendar-location-name "Dallas, TX") 
 (setq calendar-latitude 32.85)
 (setq calendar-longitude -96.85)
-(change-theme 'spolsky 'spolsky)
+(change-theme 'default-black 'default-black)
 
 (defun open-line-above ()
   (interactive)
@@ -168,7 +183,7 @@
   (newline)
   (indent-for-tab-command))
 
-;;Para lo de R
+;;Highlight code in code blocks
 (org-babel-do-load-languages
    'org-babel-load-languages
    '((R . t)
@@ -177,7 +192,23 @@
      (emacs-lisp . t)
      (gnuplot . t)))
 
+;;Smart mode line
+(setq sml/no-confirm-load-theme t)
+(sml/setup)
+(setq sml/theme 'dark)
+(require 'smart-mode-line)
 
+;; '(require org-mode)
+;;  (org-block ((t (:background "#F5F5F5" :family "Source Code Pro" :height 140))))
+;;(set-background-color "black")
+;;(require 'smartparens-config)
 
-(require 'smartparens-config)
 (require 'key-bindings)
+
+;;Neotree like nerdTree in Vim
+(require 'neotree)
+(global-set-key [f8] 'neotree-toggle)
+(setq neo-smart-open t)
+
+(beacon-mode t)
+(undo-tree-mode t)

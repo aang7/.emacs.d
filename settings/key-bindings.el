@@ -36,7 +36,7 @@
 ;;Helm
 ;(require 'helm-config)
 (global-set-key (kbd "M-x") 'helm-M-x)
-(global-set-key (kbd "C-x b") 'helm-buffers-list)
+(global-set-key (kbd "C-SPC") 'helm-buffers-list)
 (global-set-key (kbd "C-, .") 'helm-find)
 (helm-mode 1)
 (helm-autoresize-mode 1)
@@ -70,7 +70,6 @@
 
 ;;; Swipper and ivy for searching regexp
 (global-set-key "\C-s" 'swiper)
-(global-set-key (kbd "C-c C-r") 'ivy-resume)
 (global-set-key (kbd "<f6>") 'ivy-resume)
 ;;(global-set-key (kbd "M-x") 'counsel-M-x)
 ;;(global-set-key (kbd "C-x C-f") 'counsel-find-file)
