@@ -1,12 +1,12 @@
-;;Ang config
+;; aang emacs configuration
 (require 'package)
 
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/"))
 
 (package-initialize)
-;;(setq warning-minimum-level :emergency);;Not warning windows
-(setq inhibit-startup-message t);;No more start screen buffer
+(setq warning-minimum-level :emergency);; not warning windows
+(setq inhibit-startup-message t);;no more start screen buffer
 
 ;; Set path to dependencies
 (setq settings-dir
@@ -34,39 +34,44 @@
 (setq-default save-place t)
 (setq save-place-file (expand-file-name ".places" user-emacs-directory))
 
-;;(require 'setup-package)
-
-;; Install extensions if they're missing
-;;  (defun init--install-packages ()
-;;    (packages-install
-;;     '(yasnippet
-;;       dash
-;;       expand-region
-;;       multiple-cursors
-;;       org-bullets
-;;       iy-go-to-char
-;;       helm
-;;       autopair
-;;       auto-complete
-;;       ace-jump-mode
-;;       twittering-mode
-;;       use-package
-;;       php-mode
-;;       multi-web-mode
-;;       ace-window
-;;       auto-indent-mode
-;;       org-bullets
-;;       avy
-;;       flycheck
-;;       swiper
-;;       smartparens
-;;       undo-tree
-;;       )))
-;; (condition-case nil
-;;     (init--install-packages)
-;;   (error
-;;    (package-refresh-contents)
-;;    (init--install-packages)))
+(require 'setup-package)
+;;Install extensions if they're missing
+ (defun init--install-packages ()
+   (packages-install
+    '(yasnippet
+      dash
+      expand-region
+      multiple-cursors
+      org-bullets
+      iy-go-to-char
+      helm
+      autopair
+      auto-complete
+      ace-jump-mode
+      twittering-mode
+      use-package
+      php-mode
+      multi-web-mode
+      ace-window
+      auto-indent-mode
+      avy
+      flycheck
+      swiper
+      smartparens
+      undo-tree
+      beacon
+      neotree
+      smart-mode-line
+      magit
+      theme-changer
+      python-environment
+      jedi
+      )))
+(condition-case nil
+    (init--install-packages)
+  (error
+   (package-refresh-contents)
+   (init--install-packages)))
 
 ;; Setup packages
 (require 'multiple-cursors)
@@ -103,7 +108,7 @@
 
 ;;org mode
 (require 'ox-latex)
-(setq org-export-latex-listings 'minted)
+;;(setq org-export-latex-listings 'minted)
 ;(add-to-list 'org-export-latex-packages-alist '("" "minted"))
 (setq org-src-fontify-natively t) ;Can see higlighting in org mode file
 
@@ -193,10 +198,10 @@
      (gnuplot . t)))
 
 ;;Smart mode line
+(require 'smart-mode-line)
 (setq sml/no-confirm-load-theme t)
 (sml/setup)
 (setq sml/theme 'dark)
-(require 'smart-mode-line)
 
 ;; '(require org-mode)
 ;;  (org-block ((t (:background "#F5F5F5" :family "Source Code Pro" :height 140))))

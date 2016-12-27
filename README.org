@@ -1,0 +1,13 @@
+* Prerequisites
+
+- Linux Operating System
+
+* Instructions
+Clone this repo in your home directory.
+
+If you want a deep configuration switch to allinone branch:)
+
+* Notes
+
+This repo will suffer continuos changes so keep update.
+/Hope you enjoy it!/
