@@ -62,7 +62,7 @@
       beacon
       neotree
       smart-mode-line
-      magit
+      ;;magit
       theme-changer
       python-environment
       jedi

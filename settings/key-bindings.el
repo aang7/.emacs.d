@@ -1,4 +1,4 @@
-;;;;;;Multiple Cursors;;;;;
+;;Multiple Cursors
 (global-set-key(kbd "C-c m c") 'mc/edit-lines)
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
@@ -10,7 +10,6 @@
 (global-set-key (kbd "C-:") 'avy-goto-char)
 
 ;;iy-go-to-char config
-;;(require 'iy-go-to-char)
 (global-set-key (kbd "M-m") 'iy-go-to-char)
 (global-set-key (kbd "M-,") 'iy-go-to-char-backward)
 (global-set-key (kbd "M-n") 'iy-go-to-or-up-to-continue)
@@ -19,7 +18,6 @@
 (global-set-key (kbd "M-t") 'transpose-words)
 
 ;;Expand region
-;;(require 'expand-region)
 (global-set-key (kbd "C-ñ") 'er/expand-region)
 (global-set-key (kbd "C-*") 'pending-delete-mode)
 (global-set-key (kbd "C-?") 'er/contract-region)
@@ -34,7 +32,6 @@
 (global-set-key (kbd "C-x c") 'compile)
 
 ;;Helm
-;(require 'helm-config)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-SPC") 'helm-buffers-list)
 (global-set-key (kbd "C-, .") 'helm-find)
@@ -47,10 +44,18 @@
 (global-set-key (kbd "C-c u") 'uncomment-region)
 
 ;; Move windows, even in org-mode
+(setq is-windows (equal system-type 'windows-nt))
+
 (global-set-key (kbd "<s-right>") 'windmove-right)
 (global-set-key (kbd "<s-left>") 'windmove-left)
 (global-set-key (kbd "<s-up>") 'windmove-up)
 (global-set-key (kbd "<s-down>") 'windmove-down)
+;; we are on windows??
+(when is-windows
+  (global-set-key (kbd "<M-right>") 'windmove-right)
+  (global-set-key (kbd "<M-left>") 'windmove-left)
+  (global-set-key (kbd "<M-up>") 'windmove-up)
+  (global-set-key (kbd "<M-down>") 'windmove-down))
 
 ;;; buffer-move
 (global-set-key (kbd "<M-s-down>")   'buf-move-down)
