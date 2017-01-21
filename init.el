@@ -66,6 +66,7 @@
       theme-changer
       python-environment
       jedi
+      zygospore
       )))
 (condition-case nil
     (init--install-packages)
@@ -238,10 +239,6 @@
 (global-set-key (kbd "C-x 1") 'zygospore-toggle-delete-other-windows)
 
 
-;; Helm youtube -- Al parecer no esta jalando
-;;start helm-youtube.el
-(autoload 'helm-youtube "helm-youtube" nil t)
-(global-set-key (kbd "C-c y") 'helm-youtube) ;; bind hotkey
 ;;set default browser for you will use to play videos/default generic
 (setq browse-url-browser-function 'browse-url-generic)
 (setq browse-url-generic-program "google-chrome-open-url")
