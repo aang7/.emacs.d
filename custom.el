@@ -3,6 +3,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(blink-cursor-blinks 0)
  '(browse-url-generic-program "google-chrome")
  '(cursor-type (quote box))
  '(custom-safe-themes
@@ -25,9 +26,10 @@
  '(safe-local-variable-values (quote ((org-confirm-babel-evaluate))))
  '(server-mode nil)
  '(show-paren-mode t)
+ '(sml/mode-width nil)
  '(tool-bar-mode nil))
 
-(set-face-background 'modeline-inactive "gray9")
+(set-face-background 'modeline-inactive "#0E1411")
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -35,7 +37,10 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:inherit nil :stipple nil :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 111 :width normal :foundry "unknown"))))
- '(cursor ((t (:background "tomato1" :foreground "#151718")))))
+ '(cursor ((t (:background "tomato1" :foreground "#151718"))))
+ '(hl-line ((t (:background "#280029"))))
+ '(mode-line ((t (:background "black" :foreground "gray60" :inverse-video nil))))
+ '(show-paren-match ((t (:background "lawn green" :foreground "black")))))
 ;;'(ido-first-match ((t (:box (:line-width 2 :color "dark slate gray" :style released-button) :weight extra-bold))))
  ;;'(mode-line ((t (:background "OliveDrab4" :foreground "black" :box nil :underline "#4F99D3"))))
  ;;'(mode-line-inactive ((t (:foreground "#f9f9f9" :background "#666666" :box nil))))

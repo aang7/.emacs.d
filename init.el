@@ -188,6 +188,14 @@
   (newline)
   (indent-for-tab-command))
 
+(defun concat-lines ()
+  (interactive)
+  (next-line)
+  (join-line)
+  (delete-horizontal-space))
+
+;;(global-set-key (kbd "C-M-j") 'concat-lines)
+
 ;;Highlight code in code blocks
 (org-babel-do-load-languages
    'org-babel-load-languages
@@ -195,7 +203,9 @@
      (org . t)
      (latex . t)
      (emacs-lisp . t)
-     (gnuplot . t)))
+     (gnuplot . t)
+     (C . t)
+     ))
 
 ;;Smart mode line
 (require 'smart-mode-line)
@@ -216,4 +226,25 @@
 (setq neo-smart-open t)
 
 (beacon-mode t)
-(undo-tree-mode t)
+(global-undo-tree-mode t)
+
+;;font size
+(set-face-attribute 'default nil :height 109)
+
+;; save the state of Emacs from one session to another
+(desktop-save-mode t)
+
+;;zygospore -- reversible C-x 1
+(global-set-key (kbd "C-x 1") 'zygospore-toggle-delete-other-windows)
+
+
+;; Helm youtube -- Al parecer no esta jalando
+;;start helm-youtube.el
+(autoload 'helm-youtube "helm-youtube" nil t)
+(global-set-key (kbd "C-c y") 'helm-youtube) ;; bind hotkey
+;;set default browser for you will use to play videos/default generic
+(setq browse-url-browser-function 'browse-url-generic)
+(setq browse-url-generic-program "google-chrome-open-url")
+
+;;Helm
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)

@@ -1,11 +1,13 @@
-* Prerequisites
-
-- Linux Operating System
 
 * Instructions
 Clone this repo in your home directory.
 
 If you want a deep configuration switch to allinone branch:)
+* Prerequisites
+Operating Systems Tested:
+
+- Linux 
+- Windows
 
 * Notes
 

@@ -1,0 +1,4 @@
+git rm --cached /recentf.rej
+git rm --cached /recentf
+
+/elpa/*~
