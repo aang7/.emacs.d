@@ -9,6 +9,7 @@
  '(custom-safe-themes
    (quote
     ("72ac74b21322d3b51235f3b709c43c0721012e493ea844a358c7cd4d57857f1f" default)))
+ '(desktop-save-mode nil)
  '(display-time-mode t)
  '(font-use-system-font nil)
  '(ido-mode (quote both) nil (ido))
@@ -26,10 +27,9 @@
  '(safe-local-variable-values (quote ((org-confirm-babel-evaluate))))
  '(server-mode nil)
  '(show-paren-mode t)
- '(sml/mode-width nil)
+ '(sml/mode-width (quote full))
  '(tool-bar-mode nil))
 
-(set-face-background 'modeline-inactive "#0E1411")
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
