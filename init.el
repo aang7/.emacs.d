@@ -35,7 +35,7 @@
 (setq save-place-file (expand-file-name ".places" user-emacs-directory))
 
 (require 'setup-package)
-Install extensions if they're missing
+;;Install extensions if they're missing
  (defun init--install-packages ()
    (packages-install
     '(yasnippet
