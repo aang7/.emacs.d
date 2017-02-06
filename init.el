@@ -35,7 +35,7 @@
 (setq save-place-file (expand-file-name ".places" user-emacs-directory))
 
 (require 'setup-package)
-;;Install extensions if they're missing
+Install extensions if they're missing
  (defun init--install-packages ()
    (packages-install
     '(yasnippet
@@ -198,15 +198,16 @@
 ;;(global-set-key (kbd "C-M-j") 'concat-lines)
 
 ;;Highlight code in code blocks
-(org-babel-do-load-languages
-   'org-babel-load-languages
-   '((R . t)
-     (org . t)
-     (latex . t)
-     (emacs-lisp . t)
-     (gnuplot . t)
-     (C . t)
-     ))
+;; (org-babel-do-load-languages
+;;    'org-babel-load-languages
+;;    '((R . t)
+;;      (org . t)
+;;      (latex . t)
+;;      (emacs-lisp . t)
+;;      (gnuplot . t)
+;;      (C . t)
+;;      (shell . t)
+;;      ))
 
 ;;Smart mode line
 (require 'smart-mode-line)
@@ -239,9 +240,18 @@
 (global-set-key (kbd "C-x 1") 'zygospore-toggle-delete-other-windows)
 
 
-;;set default browser for you will use to play videos/default generic
-(setq browse-url-browser-function 'browse-url-generic)
-(setq browse-url-generic-program "google-chrome-open-url")
-
 ;;Helm
 (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+;; Help with org mode
+(require 'org-ac)
+(org-ac/config-default)
+
+(set-face-background 'modeline-inactive "#0E1411")
+
+;; minted for listings in export code docuements highlighting
+(setq org-latex-listings 'minted
+      org-latex-packages-alist '(("" "minted"))
+      org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
+	"pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+

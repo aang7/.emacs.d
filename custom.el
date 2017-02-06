@@ -22,12 +22,18 @@
      (caml "ocaml")
      (ESS "r")
      (java "java"))))
+ '(org-latex-minted-options (quote (("breakautoindent" "true"))))
+ '(org-latex-pdf-process
+   (quote
+    ("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f" "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f")))
  '(org-reveal-plugins (quote (classList markdown zoom notes)))
  '(org-support-shift-select t)
  '(safe-local-variable-values (quote ((org-confirm-babel-evaluate))))
  '(server-mode nil)
  '(show-paren-mode t)
  '(sml/mode-width (quote full))
+ '(term-buffer-maximum-size 0)
+ '(term-input-chunk-size 0)
  '(tool-bar-mode nil))
 
 
