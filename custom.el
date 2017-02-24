@@ -4,13 +4,19 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(blink-cursor-blinks 0)
- '(browse-url-generic-program "google-chrome")
  '(cursor-type (quote box))
  '(custom-safe-themes
    (quote
     ("72ac74b21322d3b51235f3b709c43c0721012e493ea844a358c7cd4d57857f1f" default)))
- '(desktop-save-mode nil)
+ '(desktop-path
+   (quote
+    ("~/.emacs.d/" "~/Escritorio/Radika/Samples/RadikaX/SDL/imgui-master/")))
+ '(desktop-save-mode t)
  '(display-time-mode t)
+ '(electric-pair-preserve-balance nil)
+ '(flycheck-checkers
+   (quote
+    (ada-gnat asciidoc c/c++-clang c/c++-gcc c/c++-cppcheck cfengine chef-foodcritic coffee coffee-coffeelint coq css-csslint d-dmd emacs-lisp-checkdoc erlang eruby-erubis fortran-gfortran go-gofmt go-golint go-vet go-build go-test go-errcheck go-unconvert groovy haml handlebars haskell-stack-ghc haskell-ghc haskell-hlint html-tidy jade javascript-eslint javascript-jshint javascript-gjslint javascript-jscs javascript-standard json-jsonlint json-python-json less lua-luacheck lua perl perl-perlcritic php php-phpmd php-phpcs processing puppet-parser puppet-lint python-flake8 python-pylint python-pycompile r-lintr racket rpm-rpmlint markdown-mdl rst-sphinx rst ruby-rubocop ruby-rubylint ruby ruby-jruby rust-cargo rust sass scala scala-scalastyle scheme-chicken scss-lint scss sh-bash sh-posix-dash sh-posix-bash sh-zsh sh-shellcheck slim slim-lint sql-sqlint tex-chktex tex-lacheck texinfo typescript-tslint verilog-verilator xml-xmlstarlet xml-xmllint yaml-jsyaml yaml-ruby)))
  '(font-use-system-font nil)
  '(ido-mode (quote both) nil (ido))
  '(jedi:get-in-function-call-delay 500)
@@ -45,7 +51,6 @@
  '(default ((t (:inherit nil :stipple nil :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 111 :width normal :foundry "unknown"))))
  '(cursor ((t (:background "tomato1" :foreground "#151718"))))
  '(hl-line ((t (:background "#280029"))))
- '(mode-line ((t (:background "black" :foreground "gray60" :inverse-video nil))))
  '(show-paren-match ((t (:background "lawn green" :foreground "black")))))
 ;;'(ido-first-match ((t (:box (:line-width 2 :color "dark slate gray" :style released-button) :weight extra-bold))))
  ;;'(mode-line ((t (:background "OliveDrab4" :foreground "black" :box nil :underline "#4F99D3"))))

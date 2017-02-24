@@ -57,12 +57,11 @@
       avy
       flycheck
       swiper
-      smartparens
       undo-tree
       beacon
       neotree
       smart-mode-line
-      ;;magit
+      magit
       theme-changer
       python-environment
       jedi
@@ -98,8 +97,8 @@
 (scroll-bar-mode -1)
 (electric-indent-mode 1)
 (column-number-mode t)
-;;(electric-pair-mode 1)
-(smartparens-global-mode t)
+(electric-pair-mode 1)
+
 
 
 ;;Add Hooks
@@ -137,7 +136,7 @@
 (add-hook 'c++-mode-hook 'my:ac-c-header-init)
 (add-hook 'c-mode-hook 'my:ac-c-header-init)
 
-;;reveal-js
+;; reveal-js
 ;; (add-to-list 'load-path "~/.emacs.d/elpa/org-reveal")
 ;; (require 'ox-reveal)
 ;; (setq org-reveal-root "file:///home/abel/.emacs.d/elpa/reveal.js/")
@@ -146,6 +145,7 @@
 ;;(require 'powerline)
 ;;(setq powerline-color1 "grey22")
 ;;(setq powerline-color2 "grey40")
+;; html presentation
 (require 'ox-ioslide)
 
 
@@ -195,20 +195,6 @@
   (join-line)
   (delete-horizontal-space))
 
-;;(global-set-key (kbd "C-M-j") 'concat-lines)
-
-;;Highlight code in code blocks
-;; (org-babel-do-load-languages
-;;    'org-babel-load-languages
-;;    '((R . t)
-;;      (org . t)
-;;      (latex . t)
-;;      (emacs-lisp . t)
-;;      (gnuplot . t)
-;;      (C . t)
-;;      (shell . t)
-;;      ))
-
 ;;Smart mode line
 (require 'smart-mode-line)
 (setq sml/no-confirm-load-theme t)
@@ -234,9 +220,9 @@
 (set-face-attribute 'default nil :height 109)
 
 ;; save the state of Emacs from one session to another
-(desktop-save-mode t)
+(desktop-save-mode 0)
 
-;;zygospore -- reversible C-x 1
+;; zygospore -- reversible C-x 1
 (global-set-key (kbd "C-x 1") 'zygospore-toggle-delete-other-windows)
 
 
@@ -254,4 +240,3 @@
       org-latex-pdf-process
       '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
 	"pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
-
