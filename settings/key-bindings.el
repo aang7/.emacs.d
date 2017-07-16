@@ -7,7 +7,7 @@
 (global-set-key (kbd "C-c C-n") 'mc/unmark-next-like-this)
 
 ;;Avy
-(global-set-key (kbd "C-:") 'avy-goto-char)
+;;(global-set-key (kbd "C-:") 'avy-goto-char)
 
 ;;iy-go-to-char config
 (global-set-key (kbd "M-m") 'iy-go-to-char)
@@ -22,8 +22,12 @@
 (global-set-key (kbd "C-*") 'pending-delete-mode)
 (global-set-key (kbd "C-?") 'er/contract-region)
 
-;ace-mode
+;;ace-window
 (global-set-key (kbd "M-z") 'ace-window)
+
+;;ace jump mod
+(global-set-key (kbd "C-:") 'ace-jump-mode)
+(global-set-key (kbd "C-x x") 'ace-jump-mode-pop-mark)
 
 ;Move to the last recent buffer
 (global-set-key (kbd "s-SPC")  'mode-line-other-buffer)
@@ -63,7 +67,7 @@
 (global-set-key (kbd "<M-s-right>")  'buf-move-right)
 (global-set-key (kbd "<M-s-up>")  'buf-move-up)
 ;; i dont know why after press C-z emacs dont respond
-(global-unset-key (kbd "C-z"))
+;;(global-unset-key (kbd "C-z"))
 
 (global-set-key (kbd "C-c a") 'auto-complete-mode)
 
@@ -102,5 +106,15 @@
 
 (global-set-key (kbd "M-[") 'sp-backward-unwrap-sexp)
 (global-set-key (kbd "M-]") 'sp-unwrap-sexp)
+;;Magit
+(global-set-key (kbd "C-x g") 'magit-status)
+(global-set-key (kbd "C-x p") 'magit-push)
+
+;; dumb-jump
+;; (eval-after-load 'dumb-jump
+;;   '(progn
+;;   '(define-key dumb-jump-mode-map (kbd "M-g j") 'dumb-jump-go)
+;;   '(define-key dumb-jump-mode-map (kbd "M-g x") 'dumb-jump-go-prefer-external)
+;;   '(define-key dumb-jump-mode-map (kbd "M-g b") 'dumb-jump-back)))
 
 (provide 'key-bindings)

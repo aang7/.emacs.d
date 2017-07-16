@@ -10,7 +10,7 @@
     ("72ac74b21322d3b51235f3b709c43c0721012e493ea844a358c7cd4d57857f1f" default)))
  '(desktop-path
    (quote
-    ("~/.emacs.d/" "~/Escritorio/Radika/Samples/RadikaX/SDL/imgui-master/")))
+    ("~/.emacs.d/" "~/Escritorio/Radika/Samples/RadikaX/OpenCV/RadikaProject/" "~/Escritorio/Radika/Samples/RadikaX/SDL/imgui-master/")))
  '(desktop-save-mode t)
  '(display-time-mode t)
  '(electric-pair-preserve-balance nil)
@@ -27,8 +27,13 @@
      (cperl "perl")
      (caml "ocaml")
      (ESS "r")
-     (java "java"))))
- '(org-latex-minted-options (quote (("breakautoindent" "true"))))
+     (java "java")
+     (Fortan "fortran"))))
+ '(org-latex-minted-options
+   (quote
+    (("breaklines" "true")
+     ("breakautoindent" "true")
+     ("bgcolor" "bg"))))
  '(org-latex-pdf-process
    (quote
     ("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f" "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f")))

@@ -86,6 +86,8 @@
 (require 'flycheck)
 (require 'yasnippet)
 (require 'buffer-move)
+(require 'dumb-jump)
+
 
 ;;Global modes
 (global-flycheck-mode)
@@ -98,7 +100,7 @@
 (electric-indent-mode 1)
 (column-number-mode t)
 (electric-pair-mode 1)
-
+(dumb-jump-mode 1)
 
 
 ;;Add Hooks
@@ -137,9 +139,9 @@
 (add-hook 'c-mode-hook 'my:ac-c-header-init)
 
 ;; reveal-js
-;; (add-to-list 'load-path "~/.emacs.d/elpa/org-reveal")
-;; (require 'ox-reveal)
-;; (setq org-reveal-root "file:///home/abel/.emacs.d/elpa/reveal.js/")
+(add-to-list 'load-path "~/.emacs.d/elpa/ox-reveal-20161027.226/")
+(require 'ox-reveal)
+(setq org-reveal-root "~/.emacs.d/elpa/ox-reveal-20161027.226/")
 
 (add-to-list 'load-path "~/.emacs.d/settings/")
 ;;(require 'powerline)
@@ -147,6 +149,7 @@
 ;;(setq powerline-color2 "grey40")
 ;; html presentation
 (require 'ox-ioslide)
+(require 'ox-ioslide-helper)
 
 
 ;;Jedi for python ac
@@ -225,6 +228,17 @@
 ;; zygospore -- reversible C-x 1
 (global-set-key (kbd "C-x 1") 'zygospore-toggle-delete-other-windows)
 
+;;Highlight code in code blocks
+(org-babel-do-load-languages
+   'org-babel-load-languages
+   '((R . t)
+     (org . t)
+     (latex . t)
+     (emacs-lisp . t)
+     (gnuplot . t)
+     (C . t)
+     (shell . t)
+     ))
 
 ;;Helm
 (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
@@ -240,3 +254,12 @@
       org-latex-pdf-process
       '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
 	"pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+
+
+;; Open files with determined program
+ (setq dired-guess-shell-alist-user
+           '(("\\.pdf\\'" "xreader")
+             ))
+;; focus inmediately on new split window
+(global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
+(global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
