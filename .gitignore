@@ -1,4 +1,65 @@
-git rm --cached recentf.rej
-git rm --cached recentf
+### Emacs ###
+# -*- mode: gitignore; -*-
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
 
-elpa/*~
+# Org-mode
+.org-id-locations
+*_archive
+
+# flymake-mode
+*_flymake.*
+
+# eshell files
+/eshell/history
+/eshell/lastdir
+
+# elpa packages
+/elpa/
+
+# reftex files
+*.rel
+
+# AUCTeX auto folder
+/auto/
+
+# cask packages
+.cask/
+dist/
+
+# Flycheck
+flycheck_*.el
+
+# server auth directory
+/server/
+
+# projectiles files
+.projectile
+
+# directory configuration
+.dir-locals.el
+
+# Extras
+auto-save-list
+backups/
+el-get
+elpa
+recentf
+savehist
+saveplace
+vendor
+/abbrev_defs
+/bookmarks
+.mc-lists.el
+.places
+.python-environments/
+ido.last
+ac-comphist.dat
+session*
+# End of https://www.gitignore.io/api/emacs

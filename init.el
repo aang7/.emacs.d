@@ -68,6 +68,9 @@
       zygospore
       projectile
       dumb-jump
+      ox-reveal
+      ox-ioslide
+      org-ac
       )))
 (condition-case nil
     (init--install-packages)

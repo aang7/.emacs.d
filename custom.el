@@ -5,12 +5,6 @@
  ;; If there is more than one, they won't work right.
  '(blink-cursor-blinks 0)
  '(cursor-type (quote box))
- '(custom-safe-themes
-   (quote
-    ("72ac74b21322d3b51235f3b709c43c0721012e493ea844a358c7cd4d57857f1f" default)))
- '(desktop-path
-   (quote
-    ("~/.emacs.d/" "~/Escritorio/Radika/Samples/RadikaX/OpenCV/RadikaProject/" "~/Escritorio/Radika/Samples/RadikaX/SDL/imgui-master/")))
  '(display-time-mode t)
  '(electric-pair-preserve-balance nil)
  '(flycheck-checkers
