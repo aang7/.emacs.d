@@ -66,6 +66,8 @@
       python-environment
       jedi
       zygospore
+      projectile
+      dumb-jump
       )))
 (condition-case nil
     (init--install-packages)

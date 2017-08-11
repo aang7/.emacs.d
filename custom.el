@@ -11,7 +11,6 @@
  '(desktop-path
    (quote
     ("~/.emacs.d/" "~/Escritorio/Radika/Samples/RadikaX/OpenCV/RadikaProject/" "~/Escritorio/Radika/Samples/RadikaX/SDL/imgui-master/")))
- '(desktop-save-mode t)
  '(display-time-mode t)
  '(electric-pair-preserve-balance nil)
  '(flycheck-checkers
