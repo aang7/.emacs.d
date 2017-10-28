@@ -13,7 +13,7 @@
       (expand-file-name "settings" user-emacs-directory))
 
 (add-to-list 'load-path settings-dir);; Set up load path
-(add-to-list 'load-path "~/.emacs.d/elpa/theme-changer-2.1.0");;Theme changer loadPath
+;(add-to-list 'load-path "~/.emacs.d/elpa/theme-changer-2.1.0");;Theme changer loadPath
 
 ;; Keep emacs Custom-settings in separate file
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -23,7 +23,7 @@
 (setq theme-dir
       (expand-file-name "themes" user-emacs-directory))
 (add-to-list 'custom-theme-load-path theme-dir)
-
+(load-theme 'junio t)
 ;; Write backup files to own directory
 (setq backup-directory-alist
       `(("." . ,(expand-file-name
@@ -75,6 +75,7 @@
       org
       eval-in-repl
       org-babel-eval-in-repl
+      auto-complete-c-headers
       )))
 (condition-case nil
     (init--install-packages)
@@ -141,8 +142,7 @@
 (defun my:ac-c-header-init ()
   (require 'auto-complete-c-headers)
   (add-to-list 'ac-sources 'ac-source-c-headers)
-  (add-to-list 'achead:include-directories '"/usr/include/")
-  )
+  (add-to-list 'achead:include-directories '"/usr/include/"))
 
 (add-hook 'c++-mode-hook 'my:ac-c-header-init)
 (add-hook 'c-mode-hook 'my:ac-c-header-init)
@@ -152,7 +152,7 @@
 (require 'ox-reveal)
 (setq org-reveal-root "~/.emacs.d/elpa/ox-reveal-20161027.226/")
 
-(add-to-list 'load-path "~/.emacs.d/settings/")
+
 ;;(require 'powerline)
 ;;(setq powerline-color1 "grey22")
 ;;(setq powerline-color2 "grey40")
@@ -179,13 +179,13 @@
 (setq recentf-max-saved-items 10); 10 files ought to be enough.
 
 ;;ivy
-(setq ivy-use-virtual-buffers t)
+;(setq ivy-use-virtual-buffers t)
 
-(require 'theme-changer)
-(setq calendar-location-name "Dallas, TX") 
-(setq calendar-latitude 32.85)
-(setq calendar-longitude -96.85)
-(change-theme 'default-black 'default-black)
+;; (require 'theme-changer)
+;; (setq calendar-location-name "Dallas, TX") 
+;; (setq calendar-latitude 32.85)
+;; (setq calendar-longitude -96.85)
+;; (change-theme 'default-black 'default-black)
 
 (defun open-line-above ()
   (interactive)
@@ -210,8 +210,8 @@
 ;;Smart mode line
 (require 'smart-mode-line)
 (setq sml/no-confirm-load-theme t)
+(setq sml/theme 'respectful)
 (sml/setup)
-(setq sml/theme 'dark)
 
 ;; '(require org-mode)
 ;;  (org-block ((t (:background "#F5F5F5" :family "Source Code Pro" :height 140))))
@@ -229,7 +229,7 @@
 (global-undo-tree-mode t)
 
 ;;font size
-(set-face-attribute 'default nil :height 109)
+;(set-face-attribute 'default nil :height 109)
 
 ;; save the state of Emacs from one session to another
 (desktop-save-mode 0)
@@ -255,7 +255,7 @@
 (require 'org-ac)
 (org-ac/config-default)
 
-(set-face-background 'modeline-inactive "#0E1411")
+;(set-face-background 'modeline-inactive "#0E1411")
 
 ;; minted for listings in export code docuements highlighting
 (setq org-latex-listings 'minted
@@ -272,3 +272,12 @@
 ;; focus inmediately on new split window
 (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
 (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
+
+;; multi-web-mode
+(require 'multi-web-mode)
+(setq mweb-default-major-mode 'html-mode)
+(setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
+                  (js-mode "<script +\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
+                  (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
+(setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
+(multi-web-global-mode 1)

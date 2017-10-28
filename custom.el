@@ -3,7 +3,10 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-names-vector
+   ["#242424" "#e5786d" "#95e454" "#cae682" "#8ac6f2" "#333366" "#ccaa8f" "#f6f3e8"])
  '(blink-cursor-blinks 0)
+ '(column-number-mode t)
  '(cursor-type (quote box))
  '(display-time-mode t)
  '(electric-pair-preserve-balance nil)
@@ -13,6 +16,7 @@
  '(font-use-system-font nil)
  '(ido-mode (quote both) nil (ido))
  '(jedi:get-in-function-call-delay 500)
+ '(linum-format " %i ")
  '(org-latex-minted-langs
    (quote
     ((emacs-lisp "common-lisp")
@@ -49,7 +53,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 111 :width normal :foundry "unknown"))))
+ '(default ((t (:inherit nil :stipple nil :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 109 :width normal :foundry "unknown"))))
  '(cursor ((t (:background "tomato1" :foreground "#151718"))))
  '(hl-line ((t (:background "#280029"))))
  '(show-paren-match ((t (:background "lawn green" :foreground "black")))))
