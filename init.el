@@ -71,6 +71,10 @@
       ox-reveal
       ox-ioslide
       org-ac
+      ess
+      org
+      eval-in-repl
+      org-babel-eval-in-repl
       )))
 (condition-case nil
     (init--install-packages)

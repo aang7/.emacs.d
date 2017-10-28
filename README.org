@@ -1,0 +1,69 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t broken-links:nil c:t creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:t e:t email:t f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:t title:t toc:t todo:t |:t
+#+TITLE: My Emacs Configuration
+#+DATE: <2017-10-28 Sat>
+#+AUTHOR: aang
+#+EMAIL: aang.drummer@gmail.com
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 25.3.1 (Org mode 9.1.2)
+
+
+* Emacs Custom Configuration
+
+Hello there, this is my emacs configuration setup.
+I'm not a lisp programmer, so this setup has been built looking at other /emacs/ configurations around /Github/,
+on major part with the ideas of [[https://github.com/magnars/.emacs.d][Magnar Sveen]]. 
+
+
+This setup settings are very simple!.
+If you are using it, let me know sending me an email at: /aang.drummer@gmail/.
+This setup has been tested only on linux, with the next setup:
+- /Linux Mint 18 Sarah/  (Ubuntu distribution).
+- /Emacs 25.3.1/ version.
+
+* Instructions
+Clone this repo in your home directory or if you are using windows, whatever emacs search for it's home.
+* Knowing Issues
+Well all the issues for the moment are related to org-mode specifically when you want to evaluate a code block,
+so  here I left the steps to fixed it.
+
+- At the start emacs will display a warning buffer error saying something like:
+#+BEGIN_QUOTE
+        org-babel-header-args-safe-fn
+#+END_QUOTE 
+
+It will disappear after you evaluate the following lisp code:[fn:1]
+
+#+BEGIN_SRC lisp -n 
+(byte-recompile-file
+     (expand-file-name "ob-R.el"
+                      (file-name-directory (locate-library "org")))
+     t) 
+#+END_SRC
+
+*Note*:
+        You have to evaluate it two times. after a time you restart emacs and try again. (I know it's really streessful
+        but if you don't use org mode just comment the code on lines: 241  to 250)
+- Then when you will want to evaluate a code block, the /mini buffer/ will show a message saying you:
+  #+BEGIN_QUOTE
+        evaluation of code-blocks is disabled
+  #+END_QUOTE
+
+To fix it you have to recompile the /ob-core.el/ file. To achieve that the only thing you have to do, it's execute the next command:
+#+BEGIN_QUOTE
+        byte-recompile-file
+#+END_QUOTE
+given the file as argument. [fn:2]
+** Notes
+If you want a everything running at the first start switch to /allinone/ branch, it has tested on windows and Linux. :)
+But it has more personal settings and is not very clean at all.
+* Footnotes
+
+[fn:1] If found the solution on [[https://lists.gnu.org/archive/html/emacs-orgmode/2016-02/msg00415.html][this thread]].
+
+[fn:2] Evaluation of code disabled issue is discussed on [[https://github.com/syl20bnr/spacemacs/issues/7641#issuecomment-285901710][Github]].

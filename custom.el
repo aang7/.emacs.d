@@ -32,6 +32,9 @@
     ("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f" "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f")))
  '(org-reveal-plugins (quote (classList markdown zoom notes)))
  '(org-support-shift-select t)
+ '(package-selected-packages
+   (quote
+    (org-ac ox-ioslide ox-reveal dumb-jump projectile zygospore jedi python-environment theme-changer magit smart-mode-line neotree beacon undo-tree swiper flycheck auto-indent-mode ace-window multi-web-mode php-mode use-package twittering-mode ace-jump-mode auto-complete autopair helm iy-go-to-char org-bullets multiple-cursors expand-region dash yasnippet)))
  '(safe-local-variable-values (quote ((org-confirm-babel-evaluate))))
  '(server-mode nil)
  '(show-paren-mode t)
