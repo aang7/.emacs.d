@@ -76,6 +76,7 @@
       eval-in-repl
       org-babel-eval-in-repl
       auto-complete-c-headers
+      ac-php
       )))
 (condition-case nil
     (init--install-packages)
@@ -247,6 +248,7 @@
      (gnuplot . t)
      (C . t)
      (shell . t)
+     (python . t)
      ))
 
 ;;Helm
@@ -281,3 +283,28 @@
                   (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
 (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
 (multi-web-global-mode 1)
+
+;; beautify theme org modes
+(add-to-list 'custom-theme-load-path
+         (concat
+          "~/.emacs.d/elpa/"
+          (elt (directory-files "~/.emacs.d/elpa/" nil "org-beautify-theme-[0-9].*") 0)))
+(add-hook 'org-mode-hook (lambda () (load-theme 'org-beautify)))
+
+
+;; ac-php
+(add-hook 'php-mode-hook '(lambda ()
+                          
+                           (require 'ac-php)
+                           (setq ac-sources  '(ac-source-php ) )
+                           
+                           (define-key php-mode-map  (kbd "C-]") 'ac-php-find-symbol-at-point)   ;goto define
+                           (define-key php-mode-map  (kbd "C-t") 'ac-php-location-stack-back   ) ;go back
+                           ))
+
+;; start with localhost prefix when loading a emacs buffer link
+(require 'browse-url)
+(add-to-list 'browse-url-filename-alist
+	     '("/var/www/html/" . "http:localhost/"))
+
+(put 'dired-find-alternate-file 'disabled nil)

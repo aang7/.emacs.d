@@ -50,10 +50,10 @@
 ;; Move windows, even in org-mode
 (setq is-windows (equal system-type 'windows-nt))
 
-(global-set-key (kbd "<s-right>") 'windmove-right)
-(global-set-key (kbd "<s-left>") 'windmove-left)
-(global-set-key (kbd "<s-up>") 'windmove-up)
-(global-set-key (kbd "<s-down>") 'windmove-down)
+(global-set-key (kbd "<M-right>") 'windmove-right)
+(global-set-key (kbd "<M-left>") 'windmove-left)
+(global-set-key (kbd "<M-up>") 'windmove-up)
+(global-set-key (kbd "<M-down>") 'windmove-down)
 ;; we are on windows??
 (when is-windows
   (global-set-key (kbd "<M-right>") 'windmove-right)
@@ -116,5 +116,11 @@
 ;;   '(define-key dumb-jump-mode-map (kbd "M-g j") 'dumb-jump-go)
 ;;   '(define-key dumb-jump-mode-map (kbd "M-g x") 'dumb-jump-go-prefer-external)
 ;;   '(define-key dumb-jump-mode-map (kbd "M-g b") 'dumb-jump-back)))
+
+;; jedi
+(eval-after-load 'jedi
+  '(define-key jedi-mode-map [(C-tab)] 'jedi:complete))
+
+(global-set-key (kbd "C-c C-v") 'browse-url-of-buffer)
 
 (provide 'key-bindings)

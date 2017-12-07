@@ -6,8 +6,12 @@
  '(ansi-color-names-vector
    ["#242424" "#e5786d" "#95e454" "#cae682" "#8ac6f2" "#333366" "#ccaa8f" "#f6f3e8"])
  '(blink-cursor-blinks 0)
+ '(browse-url-browser-function (quote browse-url-default-browser))
  '(column-number-mode t)
  '(cursor-type (quote box))
+ '(custom-safe-themes
+   (quote
+    ("e297f54d0dc0575a9271bb0b64dad2c05cff50b510a518f5144925f627bb5832" default)))
  '(display-time-mode t)
  '(electric-pair-preserve-balance nil)
  '(flycheck-checkers
@@ -17,6 +21,16 @@
  '(ido-mode (quote both) nil (ido))
  '(jedi:get-in-function-call-delay 500)
  '(linum-format " %i ")
+ '(org-babel-load-languages
+   (quote
+    ((R . t)
+     (org . t)
+     (latex . t)
+     (emacs-lisp . t)
+     (gnuplot . t)
+     (C . t)
+     (shell . t)
+     (shell . t))))
  '(org-latex-minted-langs
    (quote
     ((emacs-lisp "common-lisp")
@@ -26,21 +40,18 @@
      (ESS "r")
      (java "java")
      (Fortan "fortran"))))
- '(org-latex-minted-options
-   (quote
-    (("breaklines" "true")
-     ("breakautoindent" "true")
-     ("bgcolor" "bg"))))
+ '(org-latex-minted-options (quote (("breaklines" "true") ("breakautoindent" "true"))))
  '(org-latex-pdf-process
    (quote
     ("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f" "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f")))
+ '(org-link-file-path-type (quote relative))
  '(org-reveal-plugins (quote (classList markdown zoom notes)))
  '(org-support-shift-select t)
  '(package-selected-packages
    (quote
-    (org-ac ox-ioslide ox-reveal dumb-jump projectile zygospore jedi python-environment theme-changer magit smart-mode-line neotree beacon undo-tree swiper flycheck auto-indent-mode ace-window multi-web-mode php-mode use-package twittering-mode ace-jump-mode auto-complete autopair helm iy-go-to-char org-bullets multiple-cursors expand-region dash yasnippet)))
+    (org jquery-doc ac-php company org-beautify-theme jedi-core org-ac ox-ioslide ox-reveal dumb-jump projectile zygospore jedi python-environment theme-changer magit smart-mode-line neotree beacon undo-tree swiper flycheck auto-indent-mode ace-window multi-web-mode php-mode use-package twittering-mode ace-jump-mode auto-complete autopair helm iy-go-to-char org-bullets multiple-cursors expand-region dash yasnippet)))
  '(safe-local-variable-values (quote ((org-confirm-babel-evaluate))))
- '(server-mode nil)
+ '(server-mode t)
  '(show-paren-mode t)
  '(sml/mode-width (quote full))
  '(term-buffer-maximum-size 0)
