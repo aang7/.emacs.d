@@ -77,6 +77,11 @@
       org-babel-eval-in-repl
       auto-complete-c-headers
       ac-php
+      function-args
+      irony
+      google-translate
+      smartparens
+      telephone-line
       )))
 (condition-case nil
     (init--install-packages)
@@ -110,7 +115,7 @@
 (scroll-bar-mode -1)
 (electric-indent-mode 1)
 (column-number-mode t)
-(electric-pair-mode 1)
+(electric-pair-mode 0)
 (dumb-jump-mode 1)
 
 
@@ -209,15 +214,15 @@
   (delete-horizontal-space))
 
 ;;Smart mode line
-(require 'smart-mode-line)
-(setq sml/no-confirm-load-theme t)
-(setq sml/theme 'respectful)
-(sml/setup)
+;; (require 'smart-mode-line)
+;; (setq sml/no-confirm-load-theme t)
+;; (setq sml/theme 'respectful)
+;; (sml/setup)
 
 ;; '(require org-mode)
 ;;  (org-block ((t (:background "#F5F5F5" :family "Source Code Pro" :height 140))))
 ;;(set-background-color "black")
-;;(require 'smartparens-config)
+(require 'smartparens-config)
 
 (require 'key-bindings)
 
@@ -258,6 +263,11 @@
 (org-ac/config-default)
 
 ;(set-face-background 'modeline-inactive "#0E1411")
+;; irony mode hook
+;; (add-hook 'c++-mode-hook 'irony-mode)
+;; (add-hook 'c-mode-hook 'irony-mode)
+;; (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+
 
 ;; minted for listings in export code docuements highlighting
 (setq org-latex-listings 'minted
@@ -307,4 +317,33 @@
 (add-to-list 'browse-url-filename-alist
 	     '("/var/www/html/" . "http:localhost/"))
 
+;; pdf tools
+(pdf-tools-install)
+
+;; google-translate
+(require 'google-translate)
+(require 'google-translate-default-ui)
+(global-set-key  "\C-cT" 'google-translate-at-point)
+(global-set-key "\C-ct" 'google-translate-query-translate)
+
+;; playing with indentation
+(setq c-basic-offset 4)
 (put 'dired-find-alternate-file 'disabled nil)
+
+;; smartparens
+(require 'smartparens-config)
+(smartparens-global-mode t)
+
+;; telephone-line
+(require 'telephone-line)
+(setq telephone-line-primary-left-separator 'telephone-line-cubed-left
+      telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
+      telephone-line-primary-right-separator 'telephone-line-cubed-right
+      telephone-line-secondary-right-separator 'telephone-line-cubed-hollow-right)
+(setq telephone-line-height 15
+      telephone-line-evil-use-short-tag t)
+(telephone-line-mode 1)
+
+;;pony-mode
+(require 'pony-mode)
+

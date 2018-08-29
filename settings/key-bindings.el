@@ -30,7 +30,7 @@
 (global-set-key (kbd "C-x x") 'ace-jump-mode-pop-mark)
 
 ;Move to the last recent buffer
-(global-set-key (kbd "s-SPC")  'mode-line-other-buffer)
+(global-set-key (kbd "S-SPC")  'mode-line-other-buffer)
 
 (global-set-key (kbd "C-c r") 'recompile)
 (global-set-key (kbd "C-x c") 'compile)
@@ -50,10 +50,10 @@
 ;; Move windows, even in org-mode
 (setq is-windows (equal system-type 'windows-nt))
 
-(global-set-key (kbd "<M-right>") 'windmove-right)
-(global-set-key (kbd "<M-left>") 'windmove-left)
-(global-set-key (kbd "<M-up>") 'windmove-up)
-(global-set-key (kbd "<M-down>") 'windmove-down)
+;;(global-set-key (kbd "<M-z right>") 'windmove-right)
+;;(global-set-key (kbd "<M-z left>") 'windmove-left)
+;;(global-set-key (kbd "<M-z up>") 'windmove-up)
+;;(global-set-key (kbd "<M-z down>") 'windmove-down)
 ;; we are on windows??
 (when is-windows
   (global-set-key (kbd "<M-right>") 'windmove-right)
@@ -74,7 +74,7 @@
 ;;Auto indent
 (define-key global-map (kbd "RET") 'newline-and-indent)
 ;;Editing defuns
-(global-set-key (kbd "<C-s-return>") 'open-line-above)
+(global-set-key (kbd "<C-S-return>") 'open-line-above)
 (global-set-key (kbd "<C-return>") 'open-line-below)
 
 ;;; Swipper and ivy for searching regexp
@@ -123,4 +123,8 @@
 
 (global-set-key (kbd "C-c C-v") 'browse-url-of-buffer)
 
+;; smartparens
+(global-set-key (kbd "C-M-a") 'sp-beginning-of-sexp)
+(global-set-key (kbd "C-M-e") 'sp-end-of-sexp)
+(global-set-key (kbd "C-M-a") 'sp-beginning-of-sexp)
 (provide 'key-bindings)
