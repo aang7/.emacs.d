@@ -1,0 +1,388 @@
+#+STARTUP: overview 
+#+PROPERTY: header-args  :comments yes  :results silent
+
+* Introduction
+This emacs configuration has been tested on /*GNU Emacs 25.3.2* (x86_64-pc-linux-gnu, GTK+ Version 3.18.9) of 2017-09-12/.
+So I guess if you apply this /emacs/ configuration to be your own configuration as a basis, then it should work.
+
+* General tweaks
+
+#+BEGIN_SRC emacs-lisp
+(toggle-frame-maximized)
+
+  (setq warning-minimum-level :emergency) ;; not warning windows
+  (setq inhibit-startup-message t) ;;no more start screen buffer
+
+  ;; Setting themes folder
+  (setq theme-dir
+        (expand-file-name "themes" user-emacs-directory))
+  (if (file-directory-p theme-dir)
+      (message "[OK]: Custom themes dir: %s" theme-dir)
+    (make-directory theme-dir))
+  (add-to-list 'custom-theme-load-path theme-dir)
+
+  ;; keep emacs custom-settings in a separate file
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  (if (file-exists-p custom-file)
+      (message "[OK]: Custom file %s" custom-file)
+    (write-region "" nil custom-file))
+
+  (load custom-file)
+
+  ;; Write backup files to own directory
+  (setq backup-directory-alist
+        `(("." . ,(expand-file-name
+                   (concat user-emacs-directory "backups")))))
+
+  (message (expand-file-name "junio-theme.el" theme-dir))
+  (when (file-exists-p (expand-file-name "junio-theme.el" theme-dir))
+    (message "Loading junio..")
+    (load-theme 'junio t))
+
+  (require 'saveplace)
+  (setq-default save-place t)
+  (setq save-place-file (expand-file-name ".places" user-emacs-directory))
+#+END_SRC
+
+* Defuns
+
+Some general functions .
+
+#+BEGIN_SRC emacs-lisp
+
+  ;; idea from: https://stackoverflow.com/a/10095853/6132402
+  (defun ensure-package-installed (&rest packages)
+    "Assure every package is installed
+     Return a list of installed packages or nil for every skipped package."
+    (mapcar
+     (lambda (package)
+       ;; (package-installed-p 'evil)
+       (if (package-installed-p package)
+           nil
+         (package-install package)
+             ))
+     packages))
+
+  ; initializes auto-complete-c-headers and gets called for c/c++ hooks
+  (defun my:ac-c-header-init ()
+    (require 'auto-complete-c-headers)
+    (add-to-list 'ac-sources 'ac-source-c-headers)
+    (add-to-list 'achead:include-directories '"/usr/include/"))
+
+  ;; editing text defuns
+  (defun open-line-above ()
+    (interactive)
+    (beginning-of-line)
+    (newline)
+    (forward-line -1)
+    (indent-for-tab-command))
+
+  (defun open-line-below ()
+    (interactive)
+    (end-of-line)
+    (newline)
+    (indent-for-tab-command))
+#+END_SRC
+
+* Packages to Install
+
+Packages to install and some settings.
+
+#+BEGIN_SRC emacs-lisp
+
+  ;; list of my packages to have
+  ;; if you want to install a new package just add it to this list
+  ;; and then add your own configuration.
+  (setq packages-to-install
+        '(yasnippet
+          dash
+          expand-region
+          multiple-cursors
+          org-bullets
+          iy-go-to-char
+          helm
+          autopair
+          auto-complete
+          ace-jump-mode
+          twittering-mode
+          use-package
+          php-mode
+          multi-web-mode
+          ace-window
+          auto-indent-mode
+          flycheck
+          swiper
+          undo-tree
+          beacon
+          neotree
+          smart-mode-line
+          magit
+          theme-changer
+          python-environment
+          jedi
+          zygospore
+          projectile
+          dumb-jump
+          org-ac
+          org
+          eval-in-repl
+          org-babel-eval-in-repl
+          auto-complete-c-headers
+          ac-php
+          function-args
+          irony
+          google-translate
+          smartparens
+          buffer-move
+          telephone-line
+            pdf-tools
+          ))
+
+        ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
+        ;; (ensure-package-installed 'iedit 'magit) ;  --> (nil nil) if iedit and magit are already installed
+
+        (dolist (pack packages-to-install)
+          (ensure-package-installed pack))
+
+      ;; setup packages
+  (require 'multiple-cursors)
+  (require 'buffer-move)
+  (require 'expand-region)
+  (require 'autopair)
+  (require 'iy-go-to-char)
+  (require 'ace-window)
+  (require 'helm-config)
+  (require 'org-bullets)
+  (require 'auto-indent-mode)
+  (require 'flycheck)
+  (require 'yasnippet)
+  (require 'dumb-jump)
+
+  ;;Global modes
+  (global-flycheck-mode)
+  (yas-global-mode t)
+  (global-hl-line-mode)
+  (ivy-mode 1)
+  (tool-bar-mode -1)
+  (tool-bar-mode -1)
+  (show-paren-mode t)
+  (scroll-bar-mode -1)
+  (electric-indent-mode 1)
+  (column-number-mode t)
+  (electric-pair-mode 0)
+  (dumb-jump-mode 1)
+  (beacon-mode t)
+  (global-undo-tree-mode t)
+  (ido-mode t)
+
+  ;; add hooks
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+  (add-hook 'term-mode-hook (lambda()
+          (setq yas-dont-activate t)))
+
+  ;; auto-complete mode
+  (require 'auto-complete-config)
+  (ac-config-default)
+  (ac-linum-workaround)
+
+  ;;Jedi for python ac
+  (add-hook 'python-mode-hook 'jedi:setup)
+  (add-hook 'python-mode-hook 'jedi:ac-setup)
+
+  ;; multi-web-mode
+  (require 'multi-web-mode)
+  (setq mweb-default-major-mode 'html-mode)
+  (setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
+                    (js-mode "<script +\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
+                    (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
+  (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
+  (multi-web-global-mode 1)
+
+  (require 'browse-url)
+  (add-to-list 'browse-url-filename-alist
+               '("/var/www/html/" . "http:localhost/"))
+
+  ;; pdf tools
+  (pdf-tools-install)
+
+  ;; smartparens
+  (require 'smartparens-config)
+  (smartparens-global-mode t)
+
+  ;; google-translate
+  (require 'google-translate)
+  (require 'google-translate-default-ui)
+  (global-set-key  "\C-cT" 'google-translate-at-point)
+  (global-set-key "\C-ct" 'google-translate-query-translate)
+
+
+  (add-hook 'text-mode-hook
+            (lambda ()
+              (variable-pitch-mode 1)))
+
+  ;; helm
+  (helm-mode 1)
+  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+  (global-set-key (kbd "M-x") 'helm-M-x)
+  (global-set-key (kbd "C-SPC") 'helm-buffers-list)
+  (global-set-key (kbd "C-, .") 'helm-find)
+  (helm-autoresize-mode 1)
+
+
+#+END_SRC
+
+* key-bindings
+
+#+BEGIN_SRC emacs-lisp
+
+  ;; comment/uncomment region
+   (global-set-key (kbd "C-c c") 'comment-or-uncomment-region)
+   (global-set-key (kbd "C-c u") 'uncomment-region)
+
+   ;; multiple cursors
+   (global-set-key(kbd "C-c m c") 'mc/edit-lines)
+   (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+   (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+   (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+   (global-set-key (kbd "C-c C-g") 'mc/unmark-previous-like-this)
+   (global-set-key (kbd "C-c C-n") 'mc/unmark-next-like-this)
+
+   ;; iy-go-to-char config
+   (global-set-key (kbd "M-m") 'iy-go-to-char)
+   (global-set-key (kbd "M-,") 'iy-go-to-char-backward)
+   (global-set-key (kbd "M-n") 'iy-go-to-or-up-to-continue)
+   (global-set-key (kbd "M-p") 'iy-go-to-or-up-to-continue-backward)
+   (global-set-key (kbd "M-l") 'downcase-word)
+   (global-set-key (kbd "M-t") 'transpose-words)
+
+   ;; expand region
+   (global-set-key (kbd "C-ñ") 'er/expand-region)
+   (global-set-key (kbd "C-*") 'pending-delete-mode)
+   (global-set-key (kbd "C-?") 'er/contract-region)
+
+   ;; ace-window
+   (global-set-key (kbd "M-z") 'ace-window)
+
+   ;; ace jump mod
+   (global-set-key (kbd "C-:") 'ace-jump-mode)
+   (global-set-key (kbd "C-x x") 'ace-jump-mode-pop-mark)
+
+   ;; move to the last recent buffer
+   (global-set-key (kbd "C-x a")  'mode-line-other-buffer)
+
+   ;; compile commands
+   (global-set-key (kbd "C-c r") 'recompile)
+   (global-set-key (kbd "C-x c") 'compile)
+
+   ;; helm
+   (global-set-key (kbd "M-x") 'helm-M-x)
+   (global-set-key (kbd "C-SPC") 'helm-buffers-list)
+   (global-set-key (kbd "C-, .") 'helm-find)
+
+   ;; move windows, even in org-mode
+   (setq is-windows (equal system-type 'windows-nt))
+
+   (global-set-key (kbd "<s-right>") 'windmove-right)
+   (global-set-key (kbd "<s-left>") 'windmove-left)
+   (global-set-key (kbd "<s-up>") 'windmove-up)
+   (global-set-key (kbd "<s-down>") 'windmove-down)
+
+   ;; if we are on windows override windmove bindings
+   (when is-windows
+     (global-set-key (kbd "<M-right>") 'windmove-right)
+     (global-set-key (kbd "<M-left>") 'windmove-left)
+     (global-set-key (kbd "<M-up>") 'windmove-up)
+     (global-set-key (kbd "<M-down>") 'windmove-down))
+
+    ;; buffer-move
+   (global-set-key (kbd "<M-s-down>")   'buf-move-down)
+   (global-set-key (kbd "<M-s-left>")   'buf-move-left)
+   (global-set-key (kbd "<M-s-right>")  'buf-move-right)
+   (global-set-key (kbd "<M-s-up>")     'buf-move-up)
+
+    ;; swipper and ivy for searching regexp
+   (global-set-key "\C-s" 'swiper)
+   (global-set-key (kbd "<f6>") 'ivy-resume)
+   (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+   (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+   (global-set-key (kbd "<f1> l") 'counsel-load-library)
+   (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+   (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+   (global-set-key (kbd "C-c g") 'counsel-git)
+   (global-set-key (kbd "C-c j") 'counsel-git-grep)
+   (global-set-key (kbd "C-c k") 'counsel-ag)
+   (global-set-key (kbd "C-x l") 'counsel-locate)
+   (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+   (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+
+   ;; smartparens
+   (global-set-key (kbd "C-c (") 'wrap-with-brackets)
+   (global-set-key (kbd "C-c [" ) 'wrap-with-brackets)
+   (global-set-key (kbd "C-c {" ) 'wrap-with-braces)
+   (global-set-key (kbd "C-c '" ) 'wrap-with-single-quotes)
+   (global-set-key (kbd "C-c \"") 'wrap-with-double-quotes)
+   (global-set-key (kbd "C-c _" ) 'wrap-with-underscores)
+   (global-set-key (kbd "C-c `" ) 'wrap-with-back-quotes)
+
+   (global-set-key (kbd "M-[") 'sp-backward-unwrap-sexp)
+   (global-set-key (kbd "M-]") 'sp-unwrap-sexp)
+
+   ;; magit
+   (global-set-key (kbd "C-x g") 'magit-status)
+   (global-set-key (kbd "C-x p") 'magit-push)
+
+   ;; focus inmediately on new split window
+   (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
+   (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
+
+#+END_SRC
+
+* Ui stuff
+
+#+BEGIN_SRC emacs-lisp
+  (set-face-background 'ac-candidate-face "grey7")
+  (set-face-underline 'ac-candidate-face "darkgray")
+  (set-face-background 'ac-selection-face "purple4")
+  (set-face-foreground 'ac-candidate-face "green")
+
+  ;; apply transparency to emacs
+  (add-to-list 'default-frame-alist '(alpha . (95 . 95)))
+  (set-frame-parameter nil 'alpha '(95 . 95))
+
+  ;; telephone-line
+  (require 'telephone-line)
+  (setq telephone-line-primary-left-separator 'telephone-line-cubed-left
+        telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
+        telephone-line-primary-right-separator 'telephone-line-cubed-right
+        telephone-line-secondary-right-separator 'telephone-line-cubed-hollow-right)
+  (setq telephone-line-height 15
+        telephone-line-evil-use-short-tag t)
+  (telephone-line-mode 1)
+
+
+#+END_SRC
+
+* Org mode stuff
+#+BEGIN_SRC emacs-lisp
+
+      (require 'ox-latex)
+      (setq org-src-fontify-natively t) ;; to see highlighting in org src block
+  
+    ;; helping with auto-complete on org mode
+    (require 'org-ac)
+    (org-ac/config-default)
+
+  ;; highlight code in code blocks and enable the evaluation of them
+  (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((R . t)
+       (org . t)
+       (latex . t)
+       (emacs-lisp . t)
+       (gnuplot . t)
+       (C . t)
+       (sh . t)
+       (python . t)
+       ))
+#+END_SRC
+
