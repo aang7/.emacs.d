@@ -173,7 +173,6 @@ Packages to install and some settings.
   (dumb-jump-mode 1)
   (beacon-mode t)
   (global-undo-tree-mode t)
-  (ido-mode t)
 
   ;; add hooks
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
@@ -359,6 +358,15 @@ Packages to install and some settings.
         telephone-line-evil-use-short-tag t)
   (telephone-line-mode 1)
 
+  ;; hl-line
+
+  (global-hl-line-mode t)
+  (set-face-attribute
+   'hl-line
+   nil
+   :distant-foreground "OliveDrab1"
+   :background "IndianRed4")
+
 
 #+END_SRC
 
@@ -367,7 +375,7 @@ Packages to install and some settings.
 
       (require 'ox-latex)
       (setq org-src-fontify-natively t) ;; to see highlighting in org src block
-  
+
     ;; helping with auto-complete on org mode
     (require 'org-ac)
     (org-ac/config-default)
@@ -384,5 +392,42 @@ Packages to install and some settings.
        (sh . t)
        (python . t)
        ))
+
+(require 'ox-latex)
+(setq org-src-fontify-natively t) ;Can see higlighting in org mode file
 #+END_SRC
 
+* More personal stuff
+#+BEGIN_SRC emacs-lisp
+
+  ;; if you don't want my extra personal stuff just set the next var to nil
+  (setq personal_stuff t)
+
+  (defun extra_customize ()
+    "Extra personal stuff"
+
+    ;; projectile
+    (projectile-mode +1) 
+
+    (global-linum-mode +1)
+    
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    (global-set-key (kbd "<C-S-return>") 'open-line-above)
+    (global-set-key (kbd "<C-return>") 'open-line-below)
+    (define-key global-map (kbd "RET") 'newline-and-indent)
+
+    ;; minted for listings in export code docuements highlighting
+    (setq org-latex-listings 'minted
+          org-latex-packages-alist '(("" "minted"))
+          org-latex-pdf-process
+          '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
+            "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+
+    )
+
+  ;; (if personal_stuff (extra_customize) nil)
+  (when
+   personal_stuff
+    (extra_customize))
+
+#+END_SRC
