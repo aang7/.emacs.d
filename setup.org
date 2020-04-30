@@ -8,40 +8,40 @@ So I guess if you apply this /emacs/ configuration to be your own configuration 
 * General tweaks
 
 #+BEGIN_SRC emacs-lisp
-(toggle-frame-maximized)
+  (toggle-frame-maximized)
 
-  (setq warning-minimum-level :emergency) ;; not warning windows
-  (setq inhibit-startup-message t) ;;no more start screen buffer
+    (setq warning-minimum-level :emergency) ;; not warning windows
+    (setq inhibit-startup-message t) ;;no more start screen buffer
 
-  ;; Setting themes folder
-  (setq theme-dir
-        (expand-file-name "themes" user-emacs-directory))
-  (if (file-directory-p theme-dir)
-      (message "[OK]: Custom themes dir: %s" theme-dir)
-    (make-directory theme-dir))
-  (add-to-list 'custom-theme-load-path theme-dir)
+    ;; Setting themes folder
+    (setq theme-dir
+          (expand-file-name "themes" user-emacs-directory))
+    (if (file-directory-p theme-dir)
+        (message "[OK]: Custom themes dir: %s" theme-dir)
+      (make-directory theme-dir))
+    (add-to-list 'custom-theme-load-path theme-dir)
 
-  ;; keep emacs custom-settings in a separate file
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-  (if (file-exists-p custom-file)
-      (message "[OK]: Custom file %s" custom-file)
-    (write-region "" nil custom-file))
+    ;; keep emacs custom-settings in a separate file
+    (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+    (if (file-exists-p custom-file)
+        (message "[OK]: Custom file %s" custom-file)
+      (write-region "" nil custom-file))
 
-  (load custom-file)
+    (load custom-file)
 
-  ;; Write backup files to own directory
-  (setq backup-directory-alist
-        `(("." . ,(expand-file-name
-                   (concat user-emacs-directory "backups")))))
+    ;; Write backup files to own directory
+    (setq backup-directory-alist
+          `(("." . ,(expand-file-name
+                     (concat user-emacs-directory "backups")))))
 
-  (message (expand-file-name "junio-theme.el" theme-dir))
-  (when (file-exists-p (expand-file-name "junio-theme.el" theme-dir))
-    (message "Loading junio..")
-    (load-theme 'junio t))
+    ;; (message (expand-file-name "junio-theme.el" theme-dir))
+    ;; (when (file-exists-p (expand-file-name "junio-theme.el" theme-dir))
+    ;;   (message "Loading junio..")
+    ;;   (load-theme 'junio t))
 
-  (require 'saveplace)
-  (setq-default save-place t)
-  (setq save-place-file (expand-file-name ".places" user-emacs-directory))
+    (require 'saveplace)
+    (setq-default save-place t)
+    (setq save-place-file (expand-file-name ".places" user-emacs-directory))
 #+END_SRC
 
 * Defuns
@@ -135,7 +135,8 @@ Packages to install and some settings.
           smartparens
           buffer-move
           telephone-line
-            pdf-tools
+          pdf-tools
+          anaconda-mode
           ))
 
         ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
@@ -360,13 +361,13 @@ Packages to install and some settings.
 
   ;; hl-line
 
-  (global-hl-line-mode t)
-  (set-face-attribute
-   'hl-line
-   nil
-   :distant-foreground "OliveDrab1"
-   :background "IndianRed4")
-
+  (global-hl-line-mode nil)
+  ;; (set-face-attribute
+  ;;  'hl-line
+  ;;  nil
+  ;;  :distant-foreground "OliveDrab1"
+  ;;  :background "IndianRed4")
+(set-background-color "black")
 
 #+END_SRC
 
@@ -423,6 +424,10 @@ Packages to install and some settings.
           '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
             "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 
+    ;; python django
+    
+    (add-hook 'python-mode-hook 'anaconda-mode)
+    (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
     )
 
   ;; (if personal_stuff (extra_customize) nil)
