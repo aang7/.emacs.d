@@ -137,6 +137,10 @@ Packages to install and some settings.
           telephone-line
           pdf-tools
           anaconda-mode
+          treemacs
+          use-package
+          which-key
+          doom-themes
           ))
 
         ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
@@ -228,6 +232,8 @@ Packages to install and some settings.
   (global-set-key (kbd "C-, .") 'helm-find)
   (helm-autoresize-mode 1)
 
+  ;; which key
+  (which-key-mode 1)
 
 #+END_SRC
 
@@ -372,30 +378,41 @@ Packages to install and some settings.
 #+END_SRC
 
 * Org mode stuff
+
+More info
+- org-crypt: [[https://orgmode.org/worg/org-tutorials/encrypting-files.html]] 
 #+BEGIN_SRC emacs-lisp
 
-      (require 'ox-latex)
-      (setq org-src-fontify-natively t) ;; to see highlighting in org src block
+  (require 'ox-latex)
+  (setq org-src-fontify-natively t) ;; to see highlighting in org src block
 
-    ;; helping with auto-complete on org mode
-    (require 'org-ac)
-    (org-ac/config-default)
+  ;; helping with auto-complete on org mode
+  (require 'org-ac)
+  (org-ac/config-default)
 
   ;; highlight code in code blocks and enable the evaluation of them
   (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((R . t)
-       (org . t)
-       (latex . t)
-       (emacs-lisp . t)
-       (gnuplot . t)
-       (C . t)
-       (sh . t)
-       (python . t)
-       ))
+   'org-babel-load-languages
+   '((R . t)
+     (org . t)
+     (latex . t)
+     (emacs-lisp . t)
+     (gnuplot . t)
+     (C . t)
+     (sh . t)
+     (python . t)
+     ))
 
-(require 'ox-latex)
-(setq org-src-fontify-natively t) ;Can see higlighting in org mode file
+  (require 'ox-latex)
+  (setq org-src-fontify-natively t) ;Can see higlighting in org mode file
+
+  ;; encryptions headlines in org mode
+  (require 'org-crypt)
+  (org-crypt-use-before-save-magic)
+  (setq org-tags-exclude-from-inheritance (quote ("crypt")))
+  ;; GPG key to use for encryption
+  ;; Either the Key ID or set to nil to use symmetric encryption.
+  (setq org-crypt-key nil)
 #+END_SRC
 
 * More personal stuff
@@ -435,4 +452,39 @@ Packages to install and some settings.
    personal_stuff
     (extra_customize))
 
+#+END_SRC
+
+** Javascript
+
+*** RJSX mode
+#+BEGIN_SRC emacs-lisp
+  (use-package rjsx-mode
+    :ensure t
+    :mode "\\.js\\'")
+#+END_SRC
+
+*** Tide
+
+#+BEGIN_SRC emacs-lisp
+  (defun setup-tide-mode()
+    "Setup function for tide."
+    (interactive)
+    (tide-setup)
+    (flycheck-mode +1)
+    (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (eldoc-mode +1)
+    (tide-hl-identifier-mode +1)
+    (company-mode +1)
+  )
+  (use-package tide
+    :ensure t
+    :after (rjsx-mode company flycheck)
+    :hook (rjsx-mode . setup-tide-mode))
+#+END_SRC
+*** Prettier
+#+BEGIN_SRC emacs-lisp
+  (use-package prettier-js
+    :ensure t
+    :after (rjsx-mode)
+    :hook (rjsx-mode . prettier-js-mode))
 #+END_SRC
