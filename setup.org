@@ -2,7 +2,7 @@
 #+PROPERTY: header-args  :comments yes  :results silent
 
 * Introduction
-This emacs configuration has been tested on /*GNU Emacs 25.3.2* (x86_64-pc-linux-gnu, GTK+ Version 3.18.9) of 2017-09-12/.
+This emacs configuration has been tested on /*GNU Emacs 26.3* (x86_64-pc-linux-gnu, GTK+ Version 3.22.30) of 2019-09-16/.
 So I guess if you apply this /emacs/ configuration to be your own configuration as a basis, then it should work.
 
 * General tweaks
@@ -64,12 +64,12 @@ Some general functions .
      packages))
 
   ; initializes auto-complete-c-headers and gets called for c/c++ hooks
-  (defun my:ac-c-header-init ()
-    (require 'auto-complete-c-headers)
-    (add-to-list 'ac-sources 'ac-source-c-headers)
-    (add-to-list 'achead:include-directories '"/usr/include/"))
+  ;; (defun my:ac-c-header-init ()
+  ;;   (require 'auto-complete-c-headers)
+  ;;   (add-to-list 'ac-sources 'ac-source-c-headers)
+  ;;   (add-to-list 'achead:include-directories '"/usr/include/"))
 
-  ;; editing text defuns
+  ;; ;; editing text defuns
   (defun open-line-above ()
     (interactive)
     (beginning-of-line)
@@ -90,150 +90,151 @@ Packages to install and some settings.
 
 #+BEGIN_SRC emacs-lisp
 
-  ;; list of my packages to have
-  ;; if you want to install a new package just add it to this list
-  ;; and then add your own configuration.
-  (setq packages-to-install
-        '(yasnippet
-          dash
-          expand-region
-          multiple-cursors
-          org-bullets
-          iy-go-to-char
-          helm
-          autopair
-          auto-complete
-          ace-jump-mode
-          twittering-mode
-          use-package
-          php-mode
-          multi-web-mode
-          ace-window
-          auto-indent-mode
-          flycheck
-          swiper
-          undo-tree
-          beacon
-          neotree
-          smart-mode-line
-          magit
-          theme-changer
-          python-environment
-          jedi
-          zygospore
-          projectile
-          dumb-jump
-          org-ac
-          org
-          eval-in-repl
-          org-babel-eval-in-repl
-          auto-complete-c-headers
-          ac-php
-          function-args
-          irony
-          google-translate
-          smartparens
-          buffer-move
-          telephone-line
-          pdf-tools
-          anaconda-mode
-          treemacs
-          use-package
-          which-key
-          doom-themes
-          ))
+    ;; list of my packages to have
+    ;; if you want to install a new package just add it to this list
+    ;; and then add your own configuration.
+    (setq packages-to-install
+          '(yasnippet
+            dash
+            expand-region
+            multiple-cursors
+            org-bullets
+            iy-go-to-char
+            helm
+            autopair
+            ace-jump-mode
+            twittering-mode
+            use-package
+            php-mode
+            multi-web-mode
+            ace-window
+            flycheck
+            swiper
+            undo-tree
+            beacon
+            neotree
+            smart-mode-line
+            magit
+            theme-changer
+            python-environment
+            jedi
+            zygospore
+            projectile
+            dumb-jump
+            org-ac
+            org
+            eval-in-repl
+            org-babel-eval-in-repl
+            auto-complete-c-headers
+            ac-php
+            function-args
+            irony
+            google-translate
+            smartparens
+            buffer-move
+            telephone-line
+            pdf-tools
+            anaconda-mode
+            treemacs
+            use-package
+            which-key
+            doom-themes
+            company
+	    htmlize
+	    command-log-mode
+	    helm-ag
+            ))
 
-        ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
-        ;; (ensure-package-installed 'iedit 'magit) ;  --> (nil nil) if iedit and magit are already installed
+          ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
+          ;; (ensure-package-installed 'iedit 'magit) ;  --> (nil nil) if iedit and magit are already installed
 
-        (dolist (pack packages-to-install)
-          (ensure-package-installed pack))
+          (dolist (pack packages-to-install)
+            (ensure-package-installed pack))
 
-      ;; setup packages
-  (require 'multiple-cursors)
-  (require 'buffer-move)
-  (require 'expand-region)
-  (require 'autopair)
-  (require 'iy-go-to-char)
-  (require 'ace-window)
-  (require 'helm-config)
-  (require 'org-bullets)
-  (require 'auto-indent-mode)
-  (require 'flycheck)
-  (require 'yasnippet)
-  (require 'dumb-jump)
+        ;; setup packages
+    (require 'multiple-cursors)
+    (require 'buffer-move)
+    (require 'expand-region)
+  ;;  (require 'autopair)
+    (require 'iy-go-to-char)
+    (require 'ace-window)
+    (require 'helm-config)
+    (require 'org-bullets)
+;;  (require 'auto-indent-mode)
+    (require 'flycheck)
+    (require 'yasnippet)
+    (require 'dumb-jump)
 
-  ;;Global modes
-  (global-flycheck-mode)
-  (yas-global-mode t)
-  (global-hl-line-mode)
-  (ivy-mode 1)
-  (tool-bar-mode -1)
-  (tool-bar-mode -1)
-  (show-paren-mode t)
-  (scroll-bar-mode -1)
-  (electric-indent-mode 1)
-  (column-number-mode t)
-  (electric-pair-mode 0)
-  (dumb-jump-mode 1)
-  (beacon-mode t)
-  (global-undo-tree-mode t)
+    ;;Global modes
+    (global-flycheck-mode)
+    (yas-global-mode t)
+    (global-hl-line-mode)
+    (tool-bar-mode -1)
+    (tool-bar-mode -1)
+    (show-paren-mode t)
+    (scroll-bar-mode -1)
+    (electric-indent-mode 1)
+    (column-number-mode t)
+    (electric-pair-mode 0)
+    (dumb-jump-mode 1)
+  ;;  (beacon-mode t)
+    (global-undo-tree-mode t)
 
-  ;; add hooks
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-  (add-hook 'term-mode-hook (lambda()
-          (setq yas-dont-activate t)))
+    ;; add hooks
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+    (add-hook 'term-mode-hook (lambda()
+            (setq yas-dont-activate t)))
 
-  ;; auto-complete mode
-  (require 'auto-complete-config)
-  (ac-config-default)
-  (ac-linum-workaround)
+    ;; auto-complete mode
+  ;;  (require 'auto-complete-config)
+    ;;(ac-config-default)
+  ;;  (ac-linum-workaround)
 
-  ;;Jedi for python ac
-  (add-hook 'python-mode-hook 'jedi:setup)
-  (add-hook 'python-mode-hook 'jedi:ac-setup)
+    ;;Jedi for python ac
+    (add-hook 'python-mode-hook 'jedi:setup)
+    (add-hook 'python-mode-hook 'jedi:ac-setup)
 
-  ;; multi-web-mode
-  (require 'multi-web-mode)
-  (setq mweb-default-major-mode 'html-mode)
-  (setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
-                    (js-mode "<script +\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
-                    (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
-  (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
-  (multi-web-global-mode 1)
+    ;; multi-web-mode
+    (require 'multi-web-mode)
+    (setq mweb-default-major-mode 'html-mode)
+    (setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
+                      (js-mode "<script +\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
+                      (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
+    (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
+    (multi-web-global-mode 1)
 
-  (require 'browse-url)
-  (add-to-list 'browse-url-filename-alist
-               '("/var/www/html/" . "http:localhost/"))
+    (require 'browse-url)
+    (add-to-list 'browse-url-filename-alist
+                 '("/var/www/html/" . "http:localhost/"))
 
-  ;; pdf tools
-  (pdf-tools-install)
+    ;; pdf tools
+    (pdf-tools-install)
 
-  ;; smartparens
-  (require 'smartparens-config)
-  (smartparens-global-mode t)
+    ;; smartparens
+    (require 'smartparens-config)
+    (smartparens-global-mode t)
 
-  ;; google-translate
-  (require 'google-translate)
-  (require 'google-translate-default-ui)
-  (global-set-key  "\C-cT" 'google-translate-at-point)
-  (global-set-key "\C-ct" 'google-translate-query-translate)
+    ;; google-translate
+    (require 'google-translate)
+    (require 'google-translate-default-ui)
+    (global-set-key  "\C-cT" 'google-translate-at-point)
+    (global-set-key "\C-ct" 'google-translate-query-translate)
 
 
-  (add-hook 'text-mode-hook
-            (lambda ()
-              (variable-pitch-mode 1)))
+    (add-hook 'text-mode-hook
+              (lambda ()
+                (variable-pitch-mode 1)))
 
-  ;; helm
-  (helm-mode 1)
-  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
-  (global-set-key (kbd "M-x") 'helm-M-x)
-  (global-set-key (kbd "C-SPC") 'helm-buffers-list)
-  (global-set-key (kbd "C-, .") 'helm-find)
-  (helm-autoresize-mode 1)
+    ;; helm
+    (helm-mode 1)
+    (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+    (global-set-key (kbd "M-x") 'helm-M-x)
+    (global-set-key (kbd "C-SPC") 'helm-buffers-list)
+    (global-set-key (kbd "C-, .") 'helm-find)
+    (helm-autoresize-mode 1)
 
-  ;; which key
-  (which-key-mode 1)
+    ;; which key
+    (which-key-mode 1)
 
 #+END_SRC
 
@@ -346,10 +347,10 @@ Packages to install and some settings.
 * Ui stuff
 
 #+BEGIN_SRC emacs-lisp
-  (set-face-background 'ac-candidate-face "grey7")
-  (set-face-underline 'ac-candidate-face "darkgray")
-  (set-face-background 'ac-selection-face "purple4")
-  (set-face-foreground 'ac-candidate-face "green")
+;;  (set-face-background 'ac-candidate-face "grey7")
+ ;; (set-face-underline 'ac-candidate-face "darkgray")
+  ;;(set-face-background 'ac-selection-face "purple4")
+  ;;(set-face-foreground 'ac-candidate-face "green")
 
   ;; apply transparency to emacs
   (add-to-list 'default-frame-alist '(alpha . (95 . 95)))
@@ -387,10 +388,10 @@ More info
   (setq org-src-fontify-natively t) ;; to see highlighting in org src block
 
   ;; helping with auto-complete on org mode
-  (require 'org-ac)
-  (org-ac/config-default)
+  ;; (require 'org-ac)
+  ;; (org-ac/config-default)
 
-  ;; highlight code in code blocks and enable the evaluation of them
+  ;; ;;   highlight code in code blocks and enable the evaluation of them
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((R . t)
@@ -399,7 +400,7 @@ More info
      (emacs-lisp . t)
      (gnuplot . t)
      (C . t)
-     (sh . t)
+     (shell . t)
      (python . t)
      ))
 
@@ -428,7 +429,7 @@ More info
     (projectile-mode +1) 
 
     (global-linum-mode +1)
-    
+
     (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
     (global-set-key (kbd "<C-S-return>") 'open-line-above)
     (global-set-key (kbd "<C-return>") 'open-line-below)
@@ -436,15 +437,32 @@ More info
 
     ;; minted for listings in export code docuements highlighting
     (setq org-latex-listings 'minted
-          org-latex-packages-alist '(("" "minted"))
-          org-latex-pdf-process
-          '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
-            "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+	  org-latex-packages-alist '(("" "minted"))
+	  org-latex-pdf-process
+	  '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
+	    "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 
     ;; python django
-    
-    (add-hook 'python-mode-hook 'anaconda-mode)
-    (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+
+;;    (add-hook 'python-mode-hook 'anaconda-mode)
+  ;;  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+
+    ;; ido-mode
+    ;; (setq ido-everywhere t)
+    ;; (setq ido-enable-flex-matching t)
+    (ido-mode 1)
+
+    ;; autoindent between {}, [], and () when pressing return in-between.
+    (defun indent-between-pair (&rest _ignored)
+    (newline)
+    (indent-according-to-mode)
+    (forward-line -1)
+    (indent-according-to-mode))
+
+    (sp-local-pair 'prog-mode "{" nil :post-handlers '((indent-between-pair "RET")))
+    (sp-local-pair 'prog-mode "[" nil :post-handlers '((indent-between-pair "RET")))
+    (sp-local-pair 'prog-mode "(" nil :post-handlers '((indent-between-pair "RET")))
+
     )
 
   ;; (if personal_stuff (extra_customize) nil)
@@ -466,20 +484,20 @@ More info
 *** Tide
 
 #+BEGIN_SRC emacs-lisp
-  (defun setup-tide-mode()
-    "Setup function for tide."
-    (interactive)
-    (tide-setup)
-    (flycheck-mode +1)
-    (setq flycheck-check-syntax-automatically '(save mode-enabled))
-    (eldoc-mode +1)
-    (tide-hl-identifier-mode +1)
-    (company-mode +1)
-  )
-  (use-package tide
-    :ensure t
-    :after (rjsx-mode company flycheck)
-    :hook (rjsx-mode . setup-tide-mode))
+  ;; (defun setup-tide-mode()
+  ;;   "Setup function for tide."
+  ;;   (interactive)
+  ;;   (tide-setup)
+  ;;   (flycheck-mode +1)
+  ;;   (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  ;;   (eldoc-mode +1)
+  ;;   (tide-hl-identifier-mode +1)
+  ;;   (company-mode +1)
+  ;; )
+  ;; (use-package tide
+  ;;   :ensure t
+  ;;   :after (rjsx-mode company flycheck)
+  ;;   :hook (rjsx-mode . setup-tide-mode))
 #+END_SRC
 *** Prettier
 #+BEGIN_SRC emacs-lisp
@@ -488,3 +506,65 @@ More info
     :after (rjsx-mode)
     :hook (rjsx-mode . prettier-js-mode))
 #+END_SRC
+
+*** lsp-mode
+#+BEGIN_SRC emacs-lisp
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-q")
+
+  (use-package pyvenv
+    :ensure t
+    :diminish
+    :config
+    (setq pyvenv-mode-line-indicator
+	  '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] ")))
+    (pyvenv-mode +1))
+
+  (use-package lsp-mode
+      :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+	      (rjsx-mode . lsp)
+	      (python-mode . lsp)
+	      ;; if you want which-key integration
+	      (lsp-mode . lsp-enable-which-key-integration))
+      :commands lsp
+      :config
+
+
+       ;; lsp extras
+      (use-package lsp-ui
+	:ensure t
+	:config
+	(setq lsp-ui-sideline-ignore-duplicate t)
+	(add-hook 'lsp-mode-hook 'lsp-ui-mode))
+      )
+
+  ;; lsp-treemacs
+  (use-package lsp-treemacs
+    :ensure t
+    :config (lsp-treemacs-sync-mode 1))
+
+  ;; hl-todo-mode: for highlighting todo keywords
+  (use-package hl-todo
+    :ensure t
+    :config
+    (setq hl-todo-keyword-faces
+	  '(("todo"   . "#ffff00")))
+    (global-hl-todo-mode)
+    )
+#+END_SRC
+
+*** Indium
+
+#+BEGIN_SRC emacs-lisp
+  (use-package indium
+    :ensure t
+    )
+#+END_SRC
+
+*** Vue
+    #+BEGIN_SRC emacs-lisp
+      (use-package vue-mode
+	:mode "\\.vue\\'"
+	:config
+	(add-hook 'vue-mode-hook #'lsp))
+    #+END_SRC
