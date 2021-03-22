@@ -144,6 +144,7 @@ Packages to install and some settings.
 	      command-log-mode
 	      helm-ag
 	      yasnippet-snippets
+	      json-mode
 	      ))
 
 	    ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
@@ -286,7 +287,7 @@ Packages to install and some settings.
 
    ;; helm
    (global-set-key (kbd "M-x") 'helm-M-x)
-  (global-set-key (kbd "C-<tab>") 'helm-buffers-list)
+  (global-set-key (kbd "C-x <down>") 'helm-buffers-list)
    (global-set-key (kbd "C-. ,") 'helm-find)
    (global-set-key (kbd "C-. .") 'helm-ag-project-root)
 
@@ -421,6 +422,14 @@ More info
   ;; GPG key to use for encryption
   ;; Either the Key ID or set to nil to use symmetric encryption.
   (setq org-crypt-key nil)
+
+  ;; fancy priorities
+  (use-package org-fancy-priorities
+    :ensure t
+    :hook
+    (org-mode . org-fancy-priorities-mode)
+    :config
+    (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
 #+END_SRC
 
 * More personal stuff
@@ -435,7 +444,7 @@ More info
     ;; projectile
     (projectile-mode +1) 
 
-    (global-linum-mode +1)
+    (global-linum-mode -1)
 
     (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
     (global-set-key (kbd "<C-S-return>") 'open-line-above)
@@ -486,14 +495,20 @@ More info
 
 #+END_SRC
 
-** Javascript
+* Javascript
 
 *** RJSX mode
 #+BEGIN_SRC emacs-lisp
-  (use-package rjsx-mode
-    :ensure t
-    :mode "\\.js\\'")
+  ;; (use-package rjsx-mode
+  ;;   :ensure t
+  ;;   :mode "\\.js\\'")
 #+END_SRC
+    
+*** Typescript
+    #+BEGIN_SRC emacs-lisp
+      (use-package typescript-mode
+	:ensure t)
+    #+END_SRC
 
 *** Tide
 
@@ -536,7 +551,8 @@ More info
 
   (use-package lsp-mode
       :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-	      (rjsx-mode . lsp)
+	      (js-mode . lsp)
+	      (typescript-mode . lsp)
 	      (python-mode . lsp)
 	      ;; if you want which-key integration
 	      (lsp-mode . lsp-enable-which-key-integration))
@@ -544,7 +560,7 @@ More info
       :config
 
 
-    
+
        ;; lsp extras
       (use-package lsp-ui
 	:ensure t
@@ -552,9 +568,10 @@ More info
 	(setq lsp-ui-sideline-ignore-duplicate t)
 	(add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
+      ;; local configurations
       (add-hook 'hack-local-variables-hook
 	    (lambda () (when (derived-mode-p 'XXX-mode) (lsp))))
-      )
+	    )
 
   ;; lsp-treemacs
   (use-package lsp-treemacs
@@ -587,4 +604,3 @@ More info
 	:config
 	(add-hook 'vue-mode-hook #'lsp))
     #+END_SRC
-    
