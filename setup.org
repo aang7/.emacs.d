@@ -89,6 +89,8 @@ Some general functions .
 Packages to install and some settings.
 
 #+BEGIN_SRC emacs-lisp
+  ;(unless package-archive-contents   (package-refresh-contents))
+  (package-refresh-contents)
 
       ;; list of my packages to have
       ;; if you want to install a new package just add it to this list
@@ -99,9 +101,9 @@ Packages to install and some settings.
 	      expand-region
 	      multiple-cursors
 	      org-bullets
-	      iy-go-to-char
+	      ;iy-go-to-char
 	      helm
-	      autopair
+	      ;autopair
 	      ace-jump-mode
 	      twittering-mode
 	      use-package
@@ -158,7 +160,7 @@ Packages to install and some settings.
       (require 'buffer-move)
       (require 'expand-region)
     ;;  (require 'autopair)
-      (require 'iy-go-to-char)
+    ;; (require 'iy-go-to-char)
       (require 'ace-window)
       (require 'helm-config)
       (require 'org-bullets)
@@ -210,7 +212,7 @@ Packages to install and some settings.
 		   '("/var/www/html/" . "http:localhost/"))
 
       ;; pdf tools
-      (pdf-tools-install)
+      ;;(pdf-tools-install)
 
       ;; smartparens
       (require 'smartparens-config)
@@ -259,14 +261,14 @@ Packages to install and some settings.
    (global-set-key (kbd "C-c C-n") 'mc/unmark-next-like-this)
 
    ;; iy-go-to-char config
-   (global-set-key (kbd "M-m") 'iy-go-to-char)
-   (global-set-key (kbd "M-,") 'iy-go-to-char-backward)
-   (global-set-key (kbd "M-n") 'iy-go-to-or-up-to-continue)
-   (global-set-key (kbd "M-p") 'iy-go-to-or-up-to-continue-backward)
-   (global-set-key (kbd "M-l") 'downcase-word)
-   (global-set-key (kbd "M-t") 'transpose-words)
+   ;; (global-set-key (kbd "M-m") 'iy-go-to-char)
+   ;; (global-set-key (kbd "M-,") 'iy-go-to-char-backward)
+   ;; (global-set-key (kbd "M-n") 'iy-go-to-or-up-to-continue)
+   ;; (global-set-key (kbd "M-p") 'iy-go-to-or-up-to-continue-backward)
+   ;; (global-set-key (kbd "M-l") 'downcase-word)
+   ;; (global-set-key (kbd "M-t") 'transpose-words)
 
-   ;; expand region
+   ;; ;; expand region
    (global-set-key (kbd "C-ñ") 'er/expand-region)
    (global-set-key (kbd "C-*") 'pending-delete-mode)
    (global-set-key (kbd "C-?") 'er/contract-region)
