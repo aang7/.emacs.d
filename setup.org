@@ -357,35 +357,37 @@ Packages to install and some settings.
 * Ui stuff
 
 #+BEGIN_SRC emacs-lisp
-;;  (set-face-background 'ac-candidate-face "grey7")
- ;; (set-face-underline 'ac-candidate-face "darkgray")
-  ;;(set-face-background 'ac-selection-face "purple4")
-  ;;(set-face-foreground 'ac-candidate-face "green")
+  ;; background color
+  (load-theme 'doom-dark+ t)
+  (set-background-color "black")
 
   ;; apply transparency to emacs
   (add-to-list 'default-frame-alist '(alpha . (95 . 95)))
-  (set-frame-parameter nil 'alpha '(95 . 95))
+  (set-frame-parameter nil 'alpha '(95 . 100))
 
   ;; telephone-line
   (require 'telephone-line)
   (setq telephone-line-primary-left-separator 'telephone-line-cubed-left
-        telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
-        telephone-line-primary-right-separator 'telephone-line-cubed-right
-        telephone-line-secondary-right-separator 'telephone-line-cubed-hollow-right)
+	telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
+	telephone-line-primary-right-separator 'telephone-line-cubed-right
+	telephone-line-secondary-right-separator 'telephone-line-cubed-hollow-right)
   (setq telephone-line-height 15
-        telephone-line-evil-use-short-tag t)
+	telephone-line-evil-use-short-tag t)
   (telephone-line-mode 1)
 
   ;; hl-line
-
   (global-hl-line-mode nil)
+
   ;; (set-face-attribute
   ;;  'hl-line
   ;;  nil
   ;;  :distant-foreground "OliveDrab1"
   ;;  :background "IndianRed4")
-(set-background-color "black")
 
+  ;; (set-face-background 'ac-candidate-face "grey7")
+  ;; (set-face-underline 'ac-candidate-face "darkgray")
+  ;; (set-face-background 'ac-selection-face "purple4")
+  ;; (set-face-foreground 'ac-candidate-face "green")
 #+END_SRC
 
 * Org mode stuff
@@ -487,6 +489,14 @@ More info
     (sp-local-pair 'prog-mode "{" nil :post-handlers '((indent-between-pair "RET")))
     (sp-local-pair 'prog-mode "[" nil :post-handlers '((indent-between-pair "RET")))
     (sp-local-pair 'prog-mode "(" nil :post-handlers '((indent-between-pair "RET")))
+
+    (setq is-windows (equal system-type 'windows-nt))
+    ;; font settings (for this you need to have Monaco font installed)
+    (set-face-attribute 'default nil :font "Monaco-12")
+    (set-face-attribute 'fixed-pitch nil :font "Monaco-16")
+    (set-face-attribute 'variable-pitch nil :font "Monaco-14")    
+    (dolist (face '(default fixed-pitch))
+    (set-face-attribute `,face nil :font "Monaco-14"))
 
     )
 
@@ -593,9 +603,8 @@ More info
 *** Indium
 
 #+BEGIN_SRC emacs-lisp
-  (use-package indium
-    :ensure t
-    )
+  ;; (use-package indium
+  ;;   :ensure t)
 #+END_SRC
 
 *** Vue
