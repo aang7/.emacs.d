@@ -357,34 +357,42 @@
 * Ui stuff
 
   #+BEGIN_SRC emacs-lisp
-;;  (set-face-background 'ac-candidate-face "grey7")
- ;; (set-face-underline 'ac-candidate-face "darkgray")
-  ;;(set-face-background 'ac-selection-face "purple4")
-  ;;(set-face-foreground 'ac-candidate-face "green")
+    ;;  (set-face-background 'ac-candidate-face "grey7")
+    ;; (set-face-underline 'ac-candidate-face "darkgray")
+    ;;(set-face-background 'ac-selection-face "purple4")
+    ;;(set-face-foreground 'ac-candidate-face "green")
 
-  ;; apply transparency to emacs
-  (add-to-list 'default-frame-alist '(alpha . (100 . 100)))
-  (set-frame-parameter nil 'alpha '(100 . 100))
-  
-  ;; telephone-line
-  (require 'telephone-line)
-  (setq telephone-line-primary-left-separator 'telephone-line-cubed-left
-        telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
-        telephone-line-primary-right-separator 'telephone-line-cubed-right
-        telephone-line-secondary-right-separator 'telephone-line-cubed-hollow-right)
-  (setq telephone-line-height 15
-        telephone-line-evil-use-short-tag t)
-  (telephone-line-mode 1)
+    ;; apply transparency to emacs
+    (add-to-list 'default-frame-alist '(alpha . (100 . 100)))
+    (set-frame-parameter nil 'alpha '(100 . 100))
 
-  ;; hl-line
+    ;; telephone-line
+    (require 'telephone-line)
+    (setq telephone-line-primary-left-separator 'telephone-line-cubed-left
+	  telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
+	  telephone-line-primary-right-separator 'telephone-line-cubed-right
+	  telephone-line-secondary-right-separator 'telephone-line-gradient)
+    (setq telephone-line-height 15
+	  telephone-line-evil-use-short-tag t)
 
-  (global-hl-line-mode nil)
-  ;; (set-face-attribute
-  ;;  'hl-line
-  ;;  nil
-  ;;  :distant-foreground "OliveDrab1"
-  ;;  :background "IndianRed4")
-(set-background-color "black")
+    (setq telephone-line-primary-left-separator 'telephone-line-gradient
+	  telephone-line-secondary-left-separator 'telephone-line-nil
+	  telephone-line-primary-right-separator 'telephone-line-gradient
+	  telephone-line-secondary-right-separator 'telephone-line-nil)
+    (setq telephone-line-height 24
+	  telephone-line-evil-use-short-tag t)
+
+    (telephone-line-mode 1)
+
+    ;; hl-line
+
+    (global-hl-line-mode nil)
+    ;; (set-face-attribute
+    ;;  'hl-line
+    ;;  nil
+    ;;  :distant-foreground "OliveDrab1"
+    ;;  :background "IndianRed4")
+    (set-background-color "black")
 
   #+END_SRC
 
@@ -496,6 +504,10 @@
     (dolist (face '(default fixed-pitch))
     (set-face-attribute `,face nil :font "Monaco-14"))
    
+    (set-face-background 'hl-line "DarkOliveGreen")
+    ;;To keep syntax highlighting in the current line:
+    (set-face-foreground 'highlight nil)
+    (set-face-foreground 'hl-line nil)
 
     )
 
