@@ -81,7 +81,32 @@
     (interactive)
     (end-of-line)
     (newline)
-    (indent-for-tab-command))
+      (indent-For-tab-command))
+
+    (defun my-org-screenshot ()
+      "Take a screenshot into a time stamped unique-named file in the
+    same directory as the org-buffer and insert a link to this file."
+      (interactive)
+      (setq filename
+            (concat
+             (make-temp-name
+              (concat (file-name-nondirectory (buffer-file-name))
+                      "_imgs/"
+                      (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
+      (unless (file-exists-p (file-name-directory filename))
+        (make-directory (file-name-directory filename)))
+      ; take screenshot
+      ;; (if (eq system-type 'darwin)
+      ;;     (call-process "screencapture" nil nil nil "-i" filename))
+      (if (eq system-type 'darwin)
+          ;;(call-process "pngpaste" filename)
+          (shell-command (concat "pngpaste " filename)))
+      (if (eq system-type 'gnu/linux)
+          (call-process "import" nil nil nil filename))
+      ; insert into file if correctly taken
+      (if (file-exists-p filename)
+        (insert (concat "[[file:" filename "]]")))
+      (org-display-inline-images))
   #+END_SRC
 
 * Packages to Install
@@ -99,9 +124,9 @@
 	  expand-region
 	  multiple-cursors
 	  org-bullets
-	  iy-go-to-char
+            ;;iy-go-to-char
 	  helm
-	  autopair
+            ;;autopair
 	  ace-jump-mode
 	  twittering-mode
 	  use-package
@@ -145,6 +170,7 @@
 	  helm-ag
 	  yasnippet-snippets
 	  json-mode
+            exec-path-from-shell
 	  ))
 
   ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
@@ -158,7 +184,7 @@
   (require 'buffer-move)
   (require 'expand-region)
   ;;  (require 'autopair)
-  (require 'iy-go-to-char)
+    ;;(require 'iy-go-to-char)
   (require 'ace-window)
   (require 'helm-config)
   (require 'org-bullets)
@@ -180,7 +206,7 @@
   (electric-pair-mode 0)
   (dumb-jump-mode 1)
   ;;  (beacon-mode t)
-  (global-undo-tree-mode t)
+    ;; (global-undo-tree-mode t)
 
   ;; add hooks
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
@@ -261,10 +287,10 @@
   (global-set-key (kbd "C-c C-n") 'mc/unmark-next-like-this)
 
   ;; iy-go-to-char config
-  (global-set-key (kbd "M-m") 'iy-go-to-char)
-  (global-set-key (kbd "M-,") 'iy-go-to-char-backward)
-  (global-set-key (kbd "M-n") 'iy-go-to-or-up-to-continue)
-  (global-set-key (kbd "M-p") 'iy-go-to-or-up-to-continue-backward)
+    ;;(global-set-key (kbd "M-m") 'iy-go-to-char)
+    ;;(global-set-key (kbd "M-,") 'iy-go-to-char-backward)
+    ;;(global-set-key (kbd "M-n") 'iy-go-to-or-up-to-continue)
+    ;;(global-set-key (kbd "M-p") 'iy-go-to-or-up-to-continue-backward)
   (global-set-key (kbd "M-l") 'downcase-word)
   (global-set-key (kbd "M-t") 'transpose-words)
 
@@ -351,13 +377,13 @@
 
   ;; recentf
   (global-set-key (kbd "C-. r") 'recentf-open-files)
-
+    (define-key org-mode-map (kbd "C-M-y") 'my-org-screenshot)
   #+END_SRC
 
 * Ui stuff
 
   #+BEGIN_SRC emacs-lisp
-    ;;  (set-face-background 'ac-candidate-face "grey7")
+;;  (set-face-background 'ac-candidate-face "grey7")
     ;; (set-face-underline 'ac-candidate-face "darkgray")
     ;;(set-face-background 'ac-selection-face "purple4")
     ;;(set-face-foreground 'ac-candidate-face "green")
@@ -371,17 +397,9 @@
     (setq telephone-line-primary-left-separator 'telephone-line-cubed-left
 	  telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
 	  telephone-line-primary-right-separator 'telephone-line-cubed-right
-	  telephone-line-secondary-right-separator 'telephone-line-gradient)
+        telephone-line-secondary-right-separator 'telephone-line-cubed-hollow-right)
     (setq telephone-line-height 15
 	  telephone-line-evil-use-short-tag t)
-
-    (setq telephone-line-primary-left-separator 'telephone-line-gradient
-	  telephone-line-secondary-left-separator 'telephone-line-nil
-	  telephone-line-primary-right-separator 'telephone-line-gradient
-	  telephone-line-secondary-right-separator 'telephone-line-nil)
-    (setq telephone-line-height 24
-	  telephone-line-evil-use-short-tag t)
-
     (telephone-line-mode 1)
 
     ;; hl-line
@@ -392,7 +410,7 @@
     ;;  nil
     ;;  :distant-foreground "OliveDrab1"
     ;;  :background "IndianRed4")
-    (set-background-color "black")
+(set-background-color "black")
 
   #+END_SRC
 
@@ -451,6 +469,8 @@
   (defun extra_customize ()
     "Extra personal stuff"
 
+      (when (memq window-system '(mac ns x))
+      (exec-path-from-shell-initialize))
     ;; projectile
     (projectile-mode +1) 
 
@@ -504,12 +524,13 @@
     (dolist (face '(default fixed-pitch))
     (set-face-attribute `,face nil :font "Monaco-14"))
    
-    (set-face-background 'hl-line "DarkOliveGreen")
-    ;;To keep syntax highlighting in the current line:
-    (set-face-foreground 'highlight nil)
-    (set-face-foreground 'hl-line nil)
-
-    )
+      ;; org mode
+      ;; Improve org mode looks
+      (setq org-startup-indented t
+          org-pretty-entities t
+          org-hide-emphasis-markers t
+          org-startup-with-inline-images t
+          org-image-actual-width '(300)))
 
   ;; (if personal_stuff (extra_customize) nil)
   (when
@@ -584,22 +605,24 @@
 
 
 
-       ;; lsp extras
-      (use-package lsp-ui
-	:ensure t
-	:config
-	(setq lsp-ui-sideline-ignore-duplicate t)
-	(add-hook 'lsp-mode-hook 'lsp-ui-mode))
+         ;;   ;; lsp extras
+      ;;     (use-package lsp-ui
+      ;;       :ensure t
+      ;;       :config
+      ;;       (setq lsp-ui-sideline-ignore-duplicate t)
+      ;;       (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
-      ;; local configurations
-      (add-hook 'hack-local-variables-hook
-	    (lambda () (when (derived-mode-p 'XXX-mode) (lsp))))
+      ;;     ;; local configurations
+      ;;     (add-hook 'hack-local-variables-hook
+      ;; 	  (lambda () (when (derived-mode-p 'XXX-mode) (lsp))))
 	    )
 
-  ;; lsp-treemacs
-  (use-package lsp-treemacs
-    :ensure t
-    :config (lsp-treemacs-sync-mode 1))
+      ;; ;; lsp-treemacs
+      ;; (use-package lsp-treemacs
+      ;;   :ensure t
+      ;;   :config (lsp-treemacs-sync-mode 1
+                ;;			))
+
 
   ;; hl-todo-mode: for highlighting todo keywords
   (use-package hl-todo
