@@ -50,42 +50,51 @@
 
   #+BEGIN_SRC emacs-lisp
 
-  ;; idea from: https://stackoverflow.com/a/10095853/6132402
-  (defun ensure-package-installed (&rest packages)
-    "Assure every package is installed
-     Return a list of installed packages or nil for every skipped package."
-    (mapcar
-     (lambda (package)
-       ;; (package-installed-p 'evil)
-       (if (package-installed-p package)
-           nil
-         (package-install package)
-             ))
-     packages))
+    ;; idea from: https://stackoverflow.com/a/10095853/6132402
+    (defun ensure-package-installed (&rest packages)
+      "Assure every package is installed
+       Return a list of installed packages or nil for every skipped package."
+      (mapcar
+       (lambda (package)
+         ;; (package-installed-p 'evil)
+         (if (package-installed-p package)
+             nil
+           (package-install package)
+               ))
+       packages))
 
-  ; initializes auto-complete-c-headers and gets called for c/c++ hooks
-  ;; (defun my:ac-c-header-init ()
-  ;;   (require 'auto-complete-c-headers)
-  ;;   (add-to-list 'ac-sources 'ac-source-c-headers)
-  ;;   (add-to-list 'achead:include-directories '"/usr/include/"))
+    ; initializes auto-complete-c-headers and gets called for c/c++ hooks
+    ;; (defun my:ac-c-header-init ()
+    ;;   (require 'auto-complete-c-headers)
+    ;;   (add-to-list 'ac-sources 'ac-source-c-headers)
+    ;;   (add-to-list 'achead:include-directories '"/usr/include/"))
 
-  ;; ;; editing text defuns
-  (defun open-line-above ()
-    (interactive)
-    (beginning-of-line)
-    (newline)
-    (forward-line -1)
-    (indent-for-tab-command))
+    ;; ;; editing text defuns
+    (defun open-line-above ()
+      (interactive)
+      (beginning-of-line)
+      (newline)
+      (forward-line -1)
+      (indent-for-tab-command))
 
-  (defun open-line-below ()
-    (interactive)
-    (end-of-line)
-    (newline)
-      (indent-For-tab-command))
+    (defun open-line-below ()
+      (interactive)
+      (end-of-line)
+      (newline)
+        (indent-for-tab-command))
+
+    (defun duplicate-line ()
+      (interactive)
+      (beginning-of-line)
+      (set-mark-command nil)
+      (end-of-line)
+      (kill-ring-save (region-beginning) (region-end))
+      (newline)
+      (yank))
 
     (defun my-org-screenshot ()
       "Take a screenshot into a time stamped unique-named file in the
-    same directory as the org-buffer and insert a link to this file."
+      same directory as the org-buffer and insert a link to this file."
       (interactive)
       (setq filename
             (concat
@@ -95,17 +104,16 @@
                       (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
       (unless (file-exists-p (file-name-directory filename))
         (make-directory (file-name-directory filename)))
-      ; take screenshot
-      ;; (if (eq system-type 'darwin)
-      ;;     (call-process "screencapture" nil nil nil "-i" filename))
+      ;; take screenshot
       (if (eq system-type 'darwin)
-          ;;(call-process "pngpaste" filename)
           (shell-command (concat "pngpaste " filename)))
       (if (eq system-type 'gnu/linux)
           (call-process "import" nil nil nil filename))
-      ; insert into file if correctly taken
+      (if (equal system-type 'windows-nt)
+          (call-process "whatheverwindowscommand"))
+      ;; insert into file if correctly taken
       (if (file-exists-p filename)
-        (insert (concat "[[file:" filename "]]")))
+          (insert (concat "[[file:" filename "]]")))
       (org-display-inline-images))
   #+END_SRC
 
@@ -115,269 +123,272 @@
 
   #+BEGIN_SRC emacs-lisp
 
-  ;; list of my packages to have
-  ;; if you want to install a new package just add it to this list
-  ;; and then add your own configuration.
-  (setq packages-to-install
-	'(yasnippet
-	  dash
-	  expand-region
-	  multiple-cursors
-	  org-bullets
-            ;;iy-go-to-char
-	  helm
-            ;;autopair
-	  ace-jump-mode
-	  twittering-mode
-	  use-package
-	  php-mode
-	  multi-web-mode
-	  ace-window
-	  flycheck
-	  swiper
-	  undo-tree
-	  beacon
-	  neotree
-	  smart-mode-line
-	  magit
-	  theme-changer
-	  python-environment
-	  jedi
-	  zygospore
-	  projectile
-	  dumb-jump
-	  org-ac
-	  org
-	  eval-in-repl
-	  org-babel-eval-in-repl
-	  auto-complete-c-headers
-	  ac-php
-	  function-args
-	  irony
-	  google-translate
-	  smartparens
-	  buffer-move
-	  telephone-line
-	  pdf-tools
-	  anaconda-mode
-	  treemacs
-	  use-package
-	  which-key
-	  doom-themes
-	  company
-	  htmlize
-	  command-log-mode
-	  helm-ag
-	  yasnippet-snippets
-	  json-mode
-            exec-path-from-shell
-	  ))
+    ;; list of my packages to have
+    ;; if you want to install a new package just add it to this list
+    ;; and then add your own configuration.
+    (setq packages-to-install
+          '(yasnippet
+            dash
+            expand-region
+            multiple-cursors
+            org-bullets
+              ;;iy-go-to-char
+            helm
+              ;;autopair
+            ace-jump-mode
+            twittering-mode
+            use-package
+            php-mode
+            multi-web-mode
+            ace-window
+            flycheck
+            swiper
+            undo-tree
+            beacon
+            neotree
+            smart-mode-line
+            magit
+            theme-changer
+            python-environment
+            jedi
+            zygospore
+            projectile
+            dumb-jump
+            org-ac
+            org
+            eval-in-repl
+            org-babel-eval-in-repl
+            auto-complete-c-headers
+            ac-php
+            function-args
+            irony
+            google-translate
+            smartparens
+            buffer-move
+            telephone-line
+            pdf-tools
+            anaconda-mode
+            treemacs
+            use-package
+            which-key
+            doom-themes
+            company
+            htmlize
+            command-log-mode
+            helm-ag
+            yasnippet-snippets
+            json-mode
+              exec-path-from-shell
+              lsp-mode
+              skewer-mode
+            ))
 
-  ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
-  ;; (ensure-package-installed 'iedit 'magit) ;  --> (nil nil) if iedit and magit are already installed
+    ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
+    ;; (ensure-package-installed 'iedit 'magit) ;  --> (nil nil) if iedit and magit are already installed
 
-  (dolist (pack packages-to-install)
-    (ensure-package-installed pack))
+    (dolist (pack packages-to-install)
+      (ensure-package-installed pack))
 
-  ;; setup packages
-  (require 'multiple-cursors)
-  (require 'buffer-move)
-  (require 'expand-region)
-  ;;  (require 'autopair)
-    ;;(require 'iy-go-to-char)
-  (require 'ace-window)
-  (require 'helm-config)
-  (require 'org-bullets)
-  ;;  (require 'auto-indent-mode)
-  (require 'flycheck)
-  (require 'yasnippet)
-  (require 'dumb-jump)
+    ;; setup packages
+    (require 'multiple-cursors)
+    (require 'buffer-move)
+    (require 'expand-region)
+    ;;  (require 'autopair)
+      ;;(require 'iy-go-to-char)
+    (require 'ace-window)
+    (require 'helm-config)
+    (require 'org-bullets)
+    ;;  (require 'auto-indent-mode)
+    (require 'flycheck)
+    (require 'yasnippet)
+    (require 'dumb-jump)
 
-  ;;Global modes
-  (global-flycheck-mode)
-  (yas-global-mode t)
-  (global-hl-line-mode)
-  (tool-bar-mode -1)
-  (tool-bar-mode -1)
-  (show-paren-mode t)
-  (scroll-bar-mode -1)
-  (electric-indent-mode 1)
-  (column-number-mode t)
-  (electric-pair-mode 0)
-  (dumb-jump-mode 1)
-  ;;  (beacon-mode t)
-    ;; (global-undo-tree-mode t)
+    ;;Global modes
+    (global-flycheck-mode)
+    (yas-global-mode t)
+    (global-hl-line-mode)
+    (tool-bar-mode -1)
+    (tool-bar-mode -1)
+    (show-paren-mode t)
+    (scroll-bar-mode -1)
+    (electric-indent-mode 1)
+    (column-number-mode t)
+    (electric-pair-mode 0)
+    (dumb-jump-mode 1)
+    (beacon-mode t)
+    (global-undo-tree-mode t)
 
-  ;; add hooks
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-  (add-hook 'term-mode-hook (lambda()
-			      (setq yas-dont-activate t)))
+    ;; add hooks
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+    (add-hook 'term-mode-hook (lambda()
+                                (setq yas-dont-activate t)))
 
-  ;; auto-complete mode
-  ;;  (require 'auto-complete-config)
-  ;;(ac-config-default)
-  ;;  (ac-linum-workaround)
+    ;; auto-complete mode
+    ;;  (require 'auto-complete-config)
+    ;;(ac-config-default)
+    ;;  (ac-linum-workaround)
 
-  ;;Jedi for python ac
-  (add-hook 'python-mode-hook 'jedi:setup)
-  (add-hook 'python-mode-hook 'jedi:ac-setup)
+    ;;Jedi for python ac
+    (add-hook 'python-mode-hook 'jedi:setup)
+    (add-hook 'python-mode-hook 'jedi:ac-setup)
 
-  ;; multi-web-mode
-  (require 'multi-web-mode)
-  (setq mweb-default-major-mode 'html-mode)
-  (setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
-		    (js-mode "<script +\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
-		    (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
-  (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
-  (multi-web-global-mode 1)
+    ;; multi-web-mode
+    (require 'multi-web-mode)
+    (setq mweb-default-major-mode 'html-mode)
+    (setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
+                      (js-mode "<script +\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
+                      (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
+    (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
+    (multi-web-global-mode 1)
 
-  (require 'browse-url)
-  (add-to-list 'browse-url-filename-alist
-	       '("/var/www/html/" . "http:localhost/"))
+    (require 'browse-url)
+    (add-to-list 'browse-url-filename-alist
+                 '("/var/www/html/" . "http:localhost/"))
 
-  ;; pdf tools
-  (pdf-tools-install)
+    ;; pdf tools
+    (pdf-tools-install)
 
-  ;; smartparens
-  (require 'smartparens-config)
-  (smartparens-global-mode t)
+    ;; smartparens
+    (require 'smartparens-config)
+    (smartparens-global-mode t)
 
-  ;; google-translate
-  (require 'google-translate)
-  (require 'google-translate-default-ui)
-  (global-set-key  "\C-cT" 'google-translate-at-point)
-  (global-set-key "\C-ct" 'google-translate-query-translate)
+    ;; google-translate
+    (require 'google-translate)
+    (require 'google-translate-default-ui)
+    (global-set-key  "\C-cT" 'google-translate-at-point)
+    (global-set-key "\C-ct" 'google-translate-query-translate)
 
 
-  (add-hook 'text-mode-hook
-	    (lambda ()
-	      (variable-pitch-mode 1)))
+    (add-hook 'text-mode-hook
+              (lambda ()
+                (variable-pitch-mode 1)))
 
-  ;; helm
-  (helm-mode 1)
-  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
-  (helm-autoresize-mode 1)
+    ;; helm
+    (helm-mode 1)
+    (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+    (helm-autoresize-mode 1)
 
-  ;; which key
-  (which-key-mode 1)
+    ;; which key
+    (which-key-mode 1)
 
-  ;; recent files
-  (recentf-mode 1)
-  (setq recentf-max-menu-items 25)
-  (setq recentf-max-saved-items 25)
+    ;; recent files
+    (recentf-mode 1)
+    (setq recentf-max-menu-items 25)
+    (setq recentf-max-saved-items 25)
 
   #+END_SRC
 
 * key-bindings
 
   #+BEGIN_SRC emacs-lisp
-  ;; treemacs
-  (global-set-key (kbd "C-c l") 'treemacs)
+    ;; treemacs
+    (global-set-key (kbd "C-c l") 'treemacs)
 
-  ;; comment/uncomment region
-  (global-set-key (kbd "C-c c") 'comment-or-uncomment-region)
-  (global-set-key (kbd "C-c u") 'uncomment-region)
+    ;; comment/uncomment region
+    (global-set-key (kbd "C-c c") 'comment-or-uncomment-region)
+    (global-set-key (kbd "C-c u") 'uncomment-region)
 
-  ;; multiple cursors
-  (global-set-key(kbd "C-c m c") 'mc/edit-lines)
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-  (global-set-key (kbd "C-c C-g") 'mc/unmark-previous-like-this)
-  (global-set-key (kbd "C-c C-n") 'mc/unmark-next-like-this)
+    ;; multiple cursors
+    (global-set-key(kbd "C-c m c") 'mc/edit-lines)
+    (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+    (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+    (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+    (global-set-key (kbd "C-c C-g") 'mc/unmark-previous-like-this)
+    (global-set-key (kbd "C-c C-n") 'mc/unmark-next-like-this)
 
-  ;; iy-go-to-char config
-    ;;(global-set-key (kbd "M-m") 'iy-go-to-char)
-    ;;(global-set-key (kbd "M-,") 'iy-go-to-char-backward)
-    ;;(global-set-key (kbd "M-n") 'iy-go-to-or-up-to-continue)
-    ;;(global-set-key (kbd "M-p") 'iy-go-to-or-up-to-continue-backward)
-  (global-set-key (kbd "M-l") 'downcase-word)
-  (global-set-key (kbd "M-t") 'transpose-words)
+    ;; iy-go-to-char config
+      ;;(global-set-key (kbd "M-m") 'iy-go-to-char)
+      ;;(global-set-key (kbd "M-,") 'iy-go-to-char-backward)
+      ;;(global-set-key (kbd "M-n") 'iy-go-to-or-up-to-continue)
+      ;;(global-set-key (kbd "M-p") 'iy-go-to-or-up-to-continue-backward)
+    (global-set-key (kbd "M-l") 'downcase-word)
+    (global-set-key (kbd "M-t") 'transpose-words)
 
-  ;; expand region
-  (global-set-key (kbd "C-ñ") 'er/expand-region)
-  (global-set-key (kbd "C-*") 'pending-delete-mode)
-  (global-set-key (kbd "C-?") 'er/contract-region)
+    ;; expand region
+    (global-set-key (kbd "C-ñ") 'er/expand-region)
+    (global-set-key (kbd "C-*") 'pending-delete-mode)
+    (global-set-key (kbd "C-?") 'er/contract-region)
 
-  ;; ace-window
-  (global-set-key (kbd "M-z") 'ace-window)
+    ;; ace-window
+    (global-set-key (kbd "M-z") 'ace-window)
 
-  ;; ace jump mod
-  (global-set-key (kbd "C-:") 'ace-jump-mode)
-  (global-set-key (kbd "C-x x") 'ace-jump-mode-pop-mark)
+    ;; ace jump mod
+    (global-set-key (kbd "C-:") 'ace-jump-mode)
+    (global-set-key (kbd "C-x x") 'ace-jump-mode-pop-mark)
 
-  ;; move to the last recent buffer
-  (global-set-key (kbd "C-x a")  'mode-line-other-buffer)
+    ;; move to the last recent buffer
+    (global-set-key (kbd "C-x a")  'mode-line-other-buffer)
 
-  ;; compile commands
-  (global-set-key (kbd "C-c r") 'recompile)
-  (global-set-key (kbd "C-x c") 'compile)
+    ;; compile commands
+    (global-set-key (kbd "C-c r") 'recompile)
+    (global-set-key (kbd "C-x c") 'compile)
 
-  ;; helm
-  (global-set-key (kbd "M-x") 'helm-M-x)
-  (global-set-key (kbd "C-x <down>") 'helm-buffers-list)
-  (global-set-key (kbd "C-. ,") 'helm-find)
-  (global-set-key (kbd "C-. .") 'helm-ag-project-root)
+    ;; helm
+    (global-set-key (kbd "M-x") 'helm-M-x)
+    (global-set-key (kbd "C-x <down>") 'helm-buffers-list)
+    (global-set-key (kbd "C-. ,") 'helm-find)
+    (global-set-key (kbd "C-. .") 'helm-ag-project-root)
 
-  ;; move windows, even in org-mode
-  (setq is-windows (equal system-type 'windows-nt))
+    ;; move windows, even in org-mode
+    (setq is-windows (equal system-type 'windows-nt))
 
-  (global-set-key (kbd "<s-right>") 'windmove-right)
-  (global-set-key (kbd "<s-left>") 'windmove-left)
-  (global-set-key (kbd "<s-up>") 'windmove-up)
-  (global-set-key (kbd "<s-down>") 'windmove-down)
+    (global-set-key (kbd "<s-right>") 'windmove-right)
+    (global-set-key (kbd "<s-left>") 'windmove-left)
+    (global-set-key (kbd "<s-up>") 'windmove-up)
+    (global-set-key (kbd "<s-down>") 'windmove-down)
 
-  ;; if we are on windows override windmove bindings
-  (when is-windows
-    (global-set-key (kbd "<M-right>") 'windmove-right)
-    (global-set-key (kbd "<M-left>") 'windmove-left)
-    (global-set-key (kbd "<M-up>") 'windmove-up)
-    (global-set-key (kbd "<M-down>") 'windmove-down))
+    ;; if we are on windows override windmove bindings
+    (when is-windows
+      (global-set-key (kbd "<M-right>") 'windmove-right)
+      (global-set-key (kbd "<M-left>") 'windmove-left)
+      (global-set-key (kbd "<M-up>") 'windmove-up)
+      (global-set-key (kbd "<M-down>") 'windmove-down))
 
-  ;; buffer-move
-  (global-set-key (kbd "<M-s-down>")   'buf-move-down)
-  (global-set-key (kbd "<M-s-left>")   'buf-move-left)
-  (global-set-key (kbd "<M-s-right>")  'buf-move-right)
-  (global-set-key (kbd "<M-s-up>")     'buf-move-up)
+    ;; buffer-move
+    (global-set-key (kbd "<M-s-down>")   'buf-move-down)
+    (global-set-key (kbd "<M-s-left>")   'buf-move-left)
+    (global-set-key (kbd "<M-s-right>")  'buf-move-right)
+    (global-set-key (kbd "<M-s-up>")     'buf-move-up)
 
-  ;; swipper and ivy for searching regexp
-  (global-set-key "\C-s" 'swiper)
-					  ; (global-set-key (kbd "<f6>") 'ivy-resume)
-  ;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-  ;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-  ;; (global-set-key (kbd "<f1> l") 'counsel-load-library)
-  ;; (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-  ;; (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-  ;; (global-set-key (kbd "C-c g") 'counsel-git)
-  ;; (global-set-key (kbd "C-c j") 'counsel-git-grep)
-  ;; (global-set-key (kbd "C-c k") 'counsel-ag)
-  ;; (global-set-key (kbd "C-x l") 'counsel-locate)
-  ;; (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
-  ;; (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+    ;; swipper and ivy for searching regexp
+    (global-set-key "\C-s" 'swiper)
+                                            ; (global-set-key (kbd "<f6>") 'ivy-resume)
+    ;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+    ;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+    ;; (global-set-key (kbd "<f1> l") 'counsel-load-library)
+    ;; (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+    ;; (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+    ;; (global-set-key (kbd "C-c g") 'counsel-git)
+    ;; (global-set-key (kbd "C-c j") 'counsel-git-grep)
+    ;; (global-set-key (kbd "C-c k") 'counsel-ag)
+    ;; (global-set-key (kbd "C-x l") 'counsel-locate)
+    ;; (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+    ;; (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
 
-  ;; smartparens
-  (global-set-key (kbd "C-c (") 'wrap-with-brackets)
-  (global-set-key (kbd "C-c [" ) 'wrap-with-brackets)
-  (global-set-key (kbd "C-c {" ) 'wrap-with-braces)
-  (global-set-key (kbd "C-c '" ) 'wrap-with-single-quotes)
-  (global-set-key (kbd "C-c \"") 'wrap-with-double-quotes)
-  (global-set-key (kbd "C-c _" ) 'wrap-with-underscores)
-  (global-set-key (kbd "C-c `" ) 'wrap-with-back-quotes)
+    ;; smartparens
+    (global-set-key (kbd "C-c (") 'wrap-with-brackets)
+    (global-set-key (kbd "C-c [" ) 'wrap-with-brackets)
+    (global-set-key (kbd "C-c {" ) 'wrap-with-braces)
+    (global-set-key (kbd "C-c '" ) 'wrap-with-single-quotes)
+    (global-set-key (kbd "C-c \"") 'wrap-with-double-quotes)
+    (global-set-key (kbd "C-c _" ) 'wrap-with-underscores)
+    (global-set-key (kbd "C-c `" ) 'wrap-with-back-quotes)
 
-  (global-set-key (kbd "M-[") 'sp-backward-unwrap-sexp)
-  (global-set-key (kbd "M-]") 'sp-unwrap-sexp)
+    (global-set-key (kbd "M-[") 'sp-backward-unwrap-sexp)
+    (global-set-key (kbd "M-]") 'sp-unwrap-sexp)
 
-  ;; magit
-  (global-set-key (kbd "C-x g") 'magit-status)
-  (global-set-key (kbd "C-x p") 'magit-push)
+    ;; magit
+    (global-set-key (kbd "C-x g") 'magit-status)
+    (global-set-key (kbd "C-x p") 'magit-push)
 
-  ;; focus inmediately on new split window
-  (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
-  (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
+    ;; focus inmediately on new split window
+    (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
+    (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
 
-  ;; recentf
-  (global-set-key (kbd "C-. r") 'recentf-open-files)
+    ;; recentf
+    (global-set-key (kbd "C-. r") 'recentf-open-files)
     (define-key org-mode-map (kbd "C-M-y") 'my-org-screenshot)
+    (global-set-key (kbd "C-x DEL") 'delete-indentation)
   #+END_SRC
 
 * Ui stuff
@@ -463,79 +474,89 @@
 * More personal stuff
   #+BEGIN_SRC emacs-lisp
 
-  ;; if you don't want my extra personal stuff just set the next var to nil
-  (setq personal_stuff t)
+    ;; if you don't want my extra personal stuff just set the next var to nil
+    (setq personal_stuff t)
 
-  (defun extra_customize ()
-    "Extra personal stuff"
+    (defun extra_customize ()
+      "Extra personal stuff"
 
       (when (memq window-system '(mac ns x))
-      (exec-path-from-shell-initialize))
-    ;; projectile
-    (projectile-mode +1) 
+        (exec-path-from-shell-initialize))
+  
+      ;; projectile
+      (projectile-mode +1)
 
-    (global-linum-mode -1)
+      (global-linum-mode -1)
 
-    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-    (global-set-key (kbd "<C-S-return>") 'open-line-above)
-    (global-set-key (kbd "<C-return>") 'open-line-below)
-    (define-key global-map (kbd "RET") 'newline-and-indent)
+      (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+      (global-set-key (kbd "<C-S-return>") 'open-line-above)
+      (global-set-key (kbd "<C-return>") 'open-line-below)
+      (define-key global-map (kbd "RET") 'newline-and-indent)
+      (define-key global-map (kbd "s-2") 'duplicate-line)
 
-    ;; minted for listings in export code docuements highlighting
-    (setq org-latex-listings 'minted
-	  org-latex-packages-alist '(("" "minted"))
-	  org-latex-pdf-process
-	  '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
-	    "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+      ;; minted for listings in export code docuements highlighting
+      (setq org-latex-listings 'minted
+            org-latex-packages-alist '(("" "minted"))
+            org-latex-pdf-process
+            '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
+              "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 
-    ;; python django
+      ;; python django
+      ;;  (add-hook 'python-mode-hook 'anaconda-mode)
+      ;;  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
 
-    ;;    (add-hook 'python-mode-hook 'anaconda-mode)
-    ;;  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+      ;; ido-mode
+      (require 'ido)
+      (setq ido-enable-flex-matching t)
+      (ido-mode 1)
 
-    ;; ido-mode
-    (require 'ido)
-    (setq ido-enable-flex-matching t)
-    (ido-mode 1)
+      ;; amx
+      ;; (use-package amx
+      ;;  :ensure t
+      ;;  :config
+      ;;  (amx-mode t)
+      ;;  )
 
-    ;; amx
-    ;; (use-package amx
-    ;;  :ensure t
-    ;;  :config
-    ;;  (amx-mode t)
-    ;;  )
+      ;; ;; auto indent between {}, [], and () when pressing return in-between.
+      (defun indent-between-pair (&rest _ignored)
+        (newline)
+        (indent-according-to-mode)
+        (forward-line -1)
+        (indent-according-to-mode))
 
-    ;; ;; auto indent between {}, [], and () when pressing return in-between.
-    (defun indent-between-pair (&rest _ignored)
-    (newline)
-    (indent-according-to-mode)
-    (forward-line -1)
-    (indent-according-to-mode))
-
-    (sp-local-pair 'prog-mode "{" nil :post-handlers '((indent-between-pair "RET")))
-    (sp-local-pair 'prog-mode "[" nil :post-handlers '((indent-between-pair "RET")))
-    (sp-local-pair 'prog-mode "(" nil :post-handlers '((indent-between-pair "RET")))
+      (sp-local-pair 'prog-mode "{" nil :post-handlers '((indent-between-pair "RET")))
+      (sp-local-pair 'prog-mode "[" nil :post-handlers '((indent-between-pair "RET")))
+      (sp-local-pair 'prog-mode "(" nil :post-handlers '((indent-between-pair "RET")))
 
 
-    ;; set monaco font even in org mode.
-    (set-face-attribute 'default nil :font "Monaco-12")
-    (set-face-attribute 'fixed-pitch nil :font "Monaco-16")
-    (set-face-attribute 'variable-pitch nil :font "Monaco-13")    
-    (dolist (face '(default fixed-pitch))
-    (set-face-attribute `,face nil :font "Monaco-14"))
-   
+      ;; set monaco font even in org mode.
+      ;;(set-face-attribute 'default nil :font "Monaco-14")
+      ;;(set-face-attribute 'fixed-pitch nil :font "Monaco-16")
+      (set-face-attribute 'variable-pitch nil :font "Monaco-14")
+      ;; (dolist (face '(default fixed-pitch))
+      ;;(set-face-attribute `,face nil :font "Monaco-14"))
+
+      ;; (set-face-background 'hl-line "DarkOliveGreen")
+      (set-face-background 'hl-line nil)
+      ;;To keep syntax highlighting in ;TODO: he current line:
+      (set-face-foreground 'highlight nil)
+      (set-face-foreground 'hl-line nil)
       ;; org mode
       ;; Improve org mode looks
       (setq org-startup-indented t
-          org-pretty-entities t
-          org-hide-emphasis-markers t
-          org-startup-with-inline-images t
-          org-image-actual-width '(300)))
+            org-pretty-entities t
+            org-hide-emphasis-markers t
+            org-startup-with-inline-images t
+            org-image-actual-width '(300)))
 
-  ;; (if personal_stuff (extra_customize) nil)
-  (when
-   personal_stuff
-    (extra_customize))
+    ;; skewer mode
+    (add-hook 'js2-mode-hook 'skewer-mode)
+    (add-hook 'css-mode-hook 'skewer-css-mode)
+    (add-hook 'html-mode-hook 'skewer-html-mode)
+
+    (toggle-truncate-lines 1)
+
+    (when personal_stuff (extra_customize))
 
   #+END_SRC
 
@@ -582,56 +603,56 @@
 
 *** lsp-mode
     #+BEGIN_SRC emacs-lisp
-  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "C-q")
+        ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+        (setq lsp-keymap-prefix "C-q")
 
-  (use-package pyvenv
-    :ensure t
-    :diminish
-    :config
-    (setq pyvenv-mode-line-indicator
-	  '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] ")))
-    (pyvenv-mode +1))
+        (use-package pyvenv
+          :ensure t
+          :diminish
+          :config
+          (setq pyvenv-mode-line-indicator
+                '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] ")))
+          (pyvenv-mode +1))
 
-  (use-package lsp-mode
-      :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-	      (js-mode . lsp)
-	      (typescript-mode . lsp)
-	      (python-mode . lsp)
-	      ;; if you want which-key integration
-	      (lsp-mode . lsp-enable-which-key-integration))
-      :commands lsp
-      :config
-
-
-
-         ;;   ;; lsp extras
-      ;;     (use-package lsp-ui
-      ;;       :ensure t
-      ;;       :config
-      ;;       (setq lsp-ui-sideline-ignore-duplicate t)
-      ;;       (add-hook 'lsp-mode-hook 'lsp-ui-mode))
-
-      ;;     ;; local configurations
-      ;;     (add-hook 'hack-local-variables-hook
-      ;; 	  (lambda () (when (derived-mode-p 'XXX-mode) (lsp))))
-	    )
-
-      ;; ;; lsp-treemacs
-      ;; (use-package lsp-treemacs
-      ;;   :ensure t
-      ;;   :config (lsp-treemacs-sync-mode 1
-                ;;			))
+        (use-package lsp-mode
+            :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+                    (js-mode . lsp)
+                    (typescript-mode . lsp)
+                    (python-mode . lsp)
+                    ;; if you want which-key integration
+                    (lsp-mode . lsp-enable-which-key-integration))
+            :commands lsp
+            :config
 
 
-  ;; hl-todo-mode: for highlighting todo keywords
-  (use-package hl-todo
-    :ensure t
-    :config
-    (setq hl-todo-keyword-faces
-	  '(("todo"   . "#ffff00")))
-    (global-hl-todo-mode)
-    )
+
+               ;;   ;; lsp extras
+            ;;     (use-package lsp-ui
+            ;;       :ensure t
+            ;;       :config
+            ;;       (setq lsp-ui-sideline-ignore-duplicate t)
+            ;;       (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+            ;;     ;; local configurations
+            ;;     (add-hook 'hack-local-variables-hook
+            ;; 	  (lambda () (when (derived-mode-p 'XXX-mode) (lsp))))
+                  )
+
+            ;; ;; lsp-treemacs
+            ;; (use-package lsp-treemacs
+            ;;   :ensure t
+            ;;   :config (lsp-treemacs-sync-mode 1
+                      ;;			))
+
+
+        ;; hl-todo-mode: for highlighting todo keywords
+        (use-package hl-todo
+          :ensure t
+          :config
+          (setq hl-todo-keyword-faces
+                '(("todo"   . "#ffff00")
+                  ("TODO"   . "#ffff00")))
+          (global-hl-todo-mode))
     #+END_SRC
 
 *** Indium
@@ -645,8 +666,8 @@
 *** Vue
     #+BEGIN_SRC emacs-lisp
       (use-package vue-mode
-	:ensure t
-	:mode "\\.vue\\'"
-	:config
-	(add-hook 'vue-mode-hook #'lsp))
+        :ensure t
+        :mode "\\.vue\\'"
+        :config
+        (add-hook 'vue-mode-hook #'lsp))
     #+END_SRC
