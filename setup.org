@@ -178,10 +178,10 @@
             helm-ag
             yasnippet-snippets
             json-mode
-              exec-path-from-shell
-              lsp-mode
-              skewer-mode
-            ))
+            exec-path-from-shell
+            lsp-mode
+            skewer-mode
+            go-translate))
 
     ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
     ;; (ensure-package-installed 'iedit 'magit) ;  --> (nil nil) if iedit and magit are already installed
@@ -482,7 +482,7 @@
 
       (when (memq window-system '(mac ns x))
         (exec-path-from-shell-initialize))
-  
+
       ;; projectile
       (projectile-mode +1)
 
@@ -547,14 +547,26 @@
             org-pretty-entities t
             org-hide-emphasis-markers t
             org-startup-with-inline-images t
-            org-image-actual-width '(300)))
+            org-image-actual-width '(300))
 
-    ;; skewer mode
-    (add-hook 'js2-mode-hook 'skewer-mode)
-    (add-hook 'css-mode-hook 'skewer-css-mode)
-    (add-hook 'html-mode-hook 'skewer-html-mode)
+      ;; skewer mode
+      (add-hook 'js2-mode-hook 'skewer-mode)
+      (add-hook 'css-mode-hook 'skewer-css-mode)
+      (add-hook 'html-mode-hook 'skewer-html-mode)
 
-    (toggle-truncate-lines 1)
+      (toggle-truncate-lines 1)
+
+      ;; go-translate
+      ;; helps language translation
+      (require 'go-translate)
+
+      (setq gts-translate-list '(("en" "es")))
+
+      (setq gts-default-translator
+            (gts-translator
+             :picker (gts-prompt-picker)
+             :engines (list (gts-google-engine))
+             :render (gts-buffer-render))))
 
     (when personal_stuff (extra_customize))
 
