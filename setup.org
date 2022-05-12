@@ -63,13 +63,13 @@
                ))
        packages))
 
-    ; initializes auto-complete-c-headers and gets called for c/c++ hooks
+    ;; initializes auto-complete-c-headers and gets called for c/c++ hooks
     ;; (defun my:ac-c-header-init ()
-    ;;   (require 'auto-complete-c-headers)
-    ;;   (add-to-list 'ac-sources 'ac-source-c-headers)
-    ;;   (add-to-list 'achead:include-directories '"/usr/include/"))
+    ;; (require 'auto-complete-c-headers)
+    ;; (add-to-list 'ac-sources 'ac-source-c-headers)
+    ;; (add-to-list 'achead:include-directories '"/usr/include/"))
 
-    ;; ;; editing text defuns
+    ;; editing text defuns
     (defun open-line-above ()
       (interactive)
       (beginning-of-line)
@@ -132,9 +132,9 @@
             expand-region
             multiple-cursors
             org-bullets
-              ;;iy-go-to-char
+            ;;iy-go-to-char
             helm
-              ;;autopair
+            ;;autopair
             ace-jump-mode
             twittering-mode
             use-package
@@ -162,7 +162,6 @@
             ac-php
             function-args
             irony
-            google-translate
             smartparens
             buffer-move
             telephone-line
@@ -181,10 +180,8 @@
             exec-path-from-shell
             lsp-mode
             skewer-mode
-            go-translate))
-
-    ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
-    ;; (ensure-package-installed 'iedit 'magit) ;  --> (nil nil) if iedit and magit are already installed
+            go-translate
+            jump-char))
 
     (dolist (pack packages-to-install)
       (ensure-package-installed pack))
@@ -193,17 +190,17 @@
     (require 'multiple-cursors)
     (require 'buffer-move)
     (require 'expand-region)
-    ;;  (require 'autopair)
-      ;;(require 'iy-go-to-char)
+    ;; (require 'autopair)
+    ;; (require 'iy-go-to-char)
+    ;; (require 'auto-indent-mode)
     (require 'ace-window)
     (require 'helm-config)
     (require 'org-bullets)
-    ;;  (require 'auto-indent-mode)
     (require 'flycheck)
     (require 'yasnippet)
     (require 'dumb-jump)
 
-    ;;Global modes
+    ;; global modes
     (global-flycheck-mode)
     (yas-global-mode t)
     (global-hl-line-mode)
@@ -217,18 +214,20 @@
     (dumb-jump-mode 1)
     (beacon-mode t)
     (global-undo-tree-mode t)
-
+    (toggle-truncate-lines 1)
+    (global-hl-line-mode nil)
+    
     ;; add hooks
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
     (add-hook 'term-mode-hook (lambda()
                                 (setq yas-dont-activate t)))
 
     ;; auto-complete mode
-    ;;  (require 'auto-complete-config)
-    ;;(ac-config-default)
-    ;;  (ac-linum-workaround)
+    ;; (require 'auto-complete-config)
+    ;; (ac-config-default)
+    ;; (ac-linum-workaround)
 
-    ;;Jedi for python ac
+    ;; jedi for python ac
     (add-hook 'python-mode-hook 'jedi:setup)
     (add-hook 'python-mode-hook 'jedi:ac-setup)
 
@@ -251,13 +250,6 @@
     ;; smartparens
     (require 'smartparens-config)
     (smartparens-global-mode t)
-
-    ;; google-translate
-    (require 'google-translate)
-    (require 'google-translate-default-ui)
-    (global-set-key  "\C-cT" 'google-translate-at-point)
-    (global-set-key "\C-ct" 'google-translate-query-translate)
-
 
     (add-hook 'text-mode-hook
               (lambda ()
@@ -297,10 +289,10 @@
     (global-set-key (kbd "C-c C-n") 'mc/unmark-next-like-this)
 
     ;; iy-go-to-char config
-      ;;(global-set-key (kbd "M-m") 'iy-go-to-char)
-      ;;(global-set-key (kbd "M-,") 'iy-go-to-char-backward)
-      ;;(global-set-key (kbd "M-n") 'iy-go-to-or-up-to-continue)
-      ;;(global-set-key (kbd "M-p") 'iy-go-to-or-up-to-continue-backward)
+    ;; (global-set-key (kbd "M-m") 'iy-go-to-char)
+    ;; (global-set-key (kbd "M-,") 'iy-go-to-char-backward)
+    ;; (global-set-key (kbd "M-n") 'iy-go-to-or-up-to-continue)
+    ;; (global-set-key (kbd "M-p") 'iy-go-to-or-up-to-continue-backward)
     (global-set-key (kbd "M-l") 'downcase-word)
     (global-set-key (kbd "M-t") 'transpose-words)
 
@@ -312,9 +304,11 @@
     ;; ace-window
     (global-set-key (kbd "M-z") 'ace-window)
 
-    ;; ace jump mod
-    (global-set-key (kbd "C-:") 'ace-jump-mode)
+    ;; ace jump mode and jump char
+    (global-set-key (kbd "C-: :") 'ace-jump-char-mode)
     (global-set-key (kbd "C-x x") 'ace-jump-mode-pop-mark)
+    (global-set-key (kbd "C-: s") 'jump-char-forward)
+    (global-set-key (kbd "C-: a") 'jump-char-backward)
 
     ;; move to the last recent buffer
     (global-set-key (kbd "C-x a")  'mode-line-other-buffer)
@@ -325,7 +319,7 @@
 
     ;; helm
     (global-set-key (kbd "M-x") 'helm-M-x)
-    (global-set-key (kbd "C-x <down>") 'helm-buffers-list)
+    (global-set-key (kbd "C-x b") 'helm-buffers-list)
     (global-set-key (kbd "C-. ,") 'helm-find)
     (global-set-key (kbd "C-. .") 'helm-ag-project-root)
 
@@ -352,7 +346,7 @@
 
     ;; swipper and ivy for searching regexp
     (global-set-key "\C-s" 'swiper)
-                                            ; (global-set-key (kbd "<f6>") 'ivy-resume)
+    ;; (global-set-key (kbd "<f6>") 'ivy-resume)
     ;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
     ;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
     ;; (global-set-key (kbd "<f1> l") 'counsel-load-library)
@@ -365,39 +359,39 @@
     ;; (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
     ;; (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
 
-    ;; smartparens
-    (global-set-key (kbd "C-c (") 'wrap-with-brackets)
-    (global-set-key (kbd "C-c [" ) 'wrap-with-brackets)
-    (global-set-key (kbd "C-c {" ) 'wrap-with-braces)
-    (global-set-key (kbd "C-c '" ) 'wrap-with-single-quotes)
-    (global-set-key (kbd "C-c \"") 'wrap-with-double-quotes)
-    (global-set-key (kbd "C-c _" ) 'wrap-with-underscores)
-    (global-set-key (kbd "C-c `" ) 'wrap-with-back-quotes)
-
-    (global-set-key (kbd "M-[") 'sp-backward-unwrap-sexp)
-    (global-set-key (kbd "M-]") 'sp-unwrap-sexp)
-
     ;; magit
     (global-set-key (kbd "C-x g") 'magit-status)
     (global-set-key (kbd "C-x p") 'magit-push)
 
+    ;; recentf
+    (global-set-key (kbd "C-. r") 'recentf-open-files)
+
+    ;; projectile
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+
+    ;; ===== CUSTOM DEFUNS ======
+    ;; Lines
+    (global-set-key (kbd "<C-S-return>") 'open-line-above)
+    (global-set-key (kbd "<C-return>") 'open-line-below)
+    (global-set-key (kbd "C-x DEL") 'delete-indentation)
+    (define-key global-map (kbd "RET") 'newline-and-indent)
+    (define-key global-map (kbd "s-2") 'duplicate-line)
+    ;; Windows
     ;; focus inmediately on new split window
     (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
     (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
-
-    ;; recentf
-    (global-set-key (kbd "C-. r") 'recentf-open-files)
+    ;; org mode
+    ;; create and paste image from clipboard as .png for org mode
     (define-key org-mode-map (kbd "C-M-y") 'my-org-screenshot)
-    (global-set-key (kbd "C-x DEL") 'delete-indentation)
   #+END_SRC
 
 * Ui stuff
 
   #+BEGIN_SRC emacs-lisp
-;;  (set-face-background 'ac-candidate-face "grey7")
+    ;; (set-face-background 'ac-candidate-face "grey7")
     ;; (set-face-underline 'ac-candidate-face "darkgray")
-    ;;(set-face-background 'ac-selection-face "purple4")
-    ;;(set-face-foreground 'ac-candidate-face "green")
+    ;; (set-face-background 'ac-selection-face "purple4")
+    ;; (set-face-foreground 'ac-candidate-face "green")
 
     ;; apply transparency to emacs
     (add-to-list 'default-frame-alist '(alpha . (100 . 100)))
@@ -406,22 +400,19 @@
     ;; telephone-line
     (require 'telephone-line)
     (setq telephone-line-primary-left-separator 'telephone-line-cubed-left
-	  telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
-	  telephone-line-primary-right-separator 'telephone-line-cubed-right
-        telephone-line-secondary-right-separator 'telephone-line-cubed-hollow-right)
+          telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
+          telephone-line-primary-right-separator 'telephone-line-cubed-right
+          telephone-line-secondary-right-separator 'telephone-line-cubed-hollow-right)
     (setq telephone-line-height 15
-	  telephone-line-evil-use-short-tag t)
+          telephone-line-evil-use-short-tag t)
     (telephone-line-mode 1)
 
-    ;; hl-line
-
-    (global-hl-line-mode nil)
     ;; (set-face-attribute
     ;;  'hl-line
-    ;;  nil
+    ;;   nil
     ;;  :distant-foreground "OliveDrab1"
     ;;  :background "IndianRed4")
-(set-background-color "black")
+    (set-background-color "black")
 
   #+END_SRC
 
@@ -435,10 +426,10 @@
   (setq org-src-fontify-natively t) ;; to see highlighting in org src block
 
   ;; helping with auto-complete on org mode
-  ;; (require 'org-ac)
-  ;; (org-ac/config-default)
+  (require 'org-ac)
+  (org-ac/config-default)
 
-  ;; ;;   highlight code in code blocks and enable the evaluation of them
+  ;; highlight code in code blocks and enable the evaluation of them
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((R . t)
@@ -452,14 +443,14 @@
      ))
 
   (require 'ox-latex)
-  (setq org-src-fontify-natively t) ;Can see higlighting in org mode file
+  (setq org-src-fontify-natively t) ;; can see higlighting in org mode file
 
   ;; encryptions headlines in org mode
   (require 'org-crypt)
   (org-crypt-use-before-save-magic)
   (setq org-tags-exclude-from-inheritance (quote ("crypt")))
   ;; GPG key to use for encryption
-  ;; Either the Key ID or set to nil to use symmetric encryption.
+  ;; either the Key ID or set to nil to use symmetric encryption.
   (setq org-crypt-key nil)
 
   ;; fancy priorities
@@ -487,12 +478,6 @@
       (projectile-mode +1)
 
       (global-linum-mode -1)
-
-      (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-      (global-set-key (kbd "<C-S-return>") 'open-line-above)
-      (global-set-key (kbd "<C-return>") 'open-line-below)
-      (define-key global-map (kbd "RET") 'newline-and-indent)
-      (define-key global-map (kbd "s-2") 'duplicate-line)
 
       ;; minted for listings in export code docuements highlighting
       (setq org-latex-listings 'minted
@@ -554,8 +539,6 @@
       (add-hook 'css-mode-hook 'skewer-css-mode)
       (add-hook 'html-mode-hook 'skewer-html-mode)
 
-      (toggle-truncate-lines 1)
-
       ;; go-translate
       ;; helps language translation
       (require 'go-translate)
@@ -566,7 +549,9 @@
             (gts-translator
              :picker (gts-prompt-picker)
              :engines (list (gts-google-engine))
-             :render (gts-buffer-render))))
+             :render (gts-buffer-render)))
+      (global-set-key (kbd "C-: t") 'gts-do-translate))
+
 
     (when personal_stuff (extra_customize))
 
