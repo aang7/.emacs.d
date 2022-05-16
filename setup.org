@@ -181,7 +181,9 @@
             lsp-mode
             skewer-mode
             go-translate
-            jump-char))
+            jump-char
+            session
+            dired-recent))
 
     (dolist (pack packages-to-install)
       (ensure-package-installed pack))
@@ -218,7 +220,7 @@
     (global-hl-line-mode nil)
     
     ;; add hooks
-    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1) (olivetti-mode nil)))
     (add-hook 'term-mode-hook (lambda()
                                 (setq yas-dont-activate t)))
 
@@ -460,6 +462,10 @@
     (org-mode . org-fancy-priorities-mode)
     :config
     (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
+
+    ;; keep clock history persistent through sessions
+    (setq org-clock-persist 'history)
+    (org-clock-persistence-insinuate)
   #+END_SRC
 
 * More personal stuff
@@ -550,7 +556,39 @@
              :picker (gts-prompt-picker)
              :engines (list (gts-google-engine))
              :render (gts-buffer-render)))
-      (global-set-key (kbd "C-: t") 'gts-do-translate))
+      (global-set-key (kbd "C-: t") 'gts-do-translate)
+      ;; undo-tree customs
+      (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
+      (setq undo-tree-visualizer-timestamps t)
+      ;; dired-recent show recent visited directories
+      (dired-recent-mode 1)
+      (use-package session
+      :ensure t
+      ;:pin melpa-stable
+      :config
+      (progn
+        (setq session-save-file (expand-file-name "~/.emacs.d/.session"))
+        (add-hook 'after-init-hook 'session-initialize)
+
+        ;; save a bunch of variables to the desktop file
+        ;; for lists specify the len of the maximal saved data also
+        (setq desktop-globals-to-save
+              (append '((extended-command-history . 30)
+                        (file-name-history        . 100)
+                        (grep-history             . 30)
+                        (compile-history          . 30)
+                        (minibuffer-history       . 50)
+                        (query-replace-history    . 60)
+                        (read-expression-history  . 60)
+                        (regexp-history           . 60)
+                        (regexp-search-ring       . 20)
+                        (search-ring              . 20)
+                        (comint-input-ring        . 50)
+                        (shell-command-history    . 50)
+                        desktop-missing-file-warning
+                        tags-file-name
+                        register-alist)))
+        )))
 
 
     (when personal_stuff (extra_customize))
