@@ -8,7 +8,7 @@
 * General tweaks
 
   #+BEGIN_SRC emacs-lisp
-  (toggle-frame-maximized)
+    ;;(toggle-frame-maximized)
 
     (setq warning-minimum-level :emergency) ;; not warning windows
     (setq inhibit-startup-message t) ;;no more start screen buffer
@@ -207,18 +207,17 @@
     (yas-global-mode t)
     (global-hl-line-mode)
     (tool-bar-mode -1)
-    (tool-bar-mode -1)
     (show-paren-mode t)
     (scroll-bar-mode -1)
     (electric-indent-mode 1)
     (column-number-mode t)
-    (electric-pair-mode 0)
+    (electric-pair-mode t)
     (dumb-jump-mode 1)
     (beacon-mode t)
     (global-undo-tree-mode t)
     (toggle-truncate-lines 1)
     (global-hl-line-mode nil)
-    
+
     ;; add hooks
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1) (olivetti-mode nil)))
     (add-hook 'term-mode-hook (lambda()
@@ -251,7 +250,7 @@
 
     ;; smartparens
     (require 'smartparens-config)
-    (smartparens-global-mode t)
+    (smartparens-global-mode nil)
 
     (add-hook 'text-mode-hook
               (lambda ()
@@ -347,7 +346,9 @@
     (global-set-key (kbd "<M-s-up>")     'buf-move-up)
 
     ;; swipper and ivy for searching regexp
-    (global-set-key "\C-s" 'swiper)
+    (global-set-key "\C-s" 'swiper-isearch)
+    (global-set-key "\C-r" 'swiper-isearch-backward)
+        
     ;; (global-set-key (kbd "<f6>") 'ivy-resume)
     ;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
     ;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
@@ -368,8 +369,6 @@
     ;; recentf
     (global-set-key (kbd "C-. r") 'recentf-open-files)
 
-    ;; projectile
-    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 
     ;; ===== CUSTOM DEFUNS ======
     ;; Lines
@@ -385,6 +384,8 @@
     ;; org mode
     ;; create and paste image from clipboard as .png for org mode
     (define-key org-mode-map (kbd "C-M-y") 'my-org-screenshot)
+    (define-key org-mode-map (kbd "C-: e e") 'org-encrypt-entry)
+    (define-key org-mode-map (kbd "C-: e d") 'org-decrypt-entry)
   #+END_SRC
 
 * Ui stuff
@@ -424,44 +425,44 @@
   - org-crypt: [[https://orgmode.org/worg/org-tutorials/encrypting-files.html]] 
   #+BEGIN_SRC emacs-lisp
 
-  (require 'ox-latex)
-  (setq org-src-fontify-natively t) ;; to see highlighting in org src block
+    (require 'ox-latex)
+    (setq org-src-fontify-natively t) ;; to see highlighting in org src block
 
-  ;; helping with auto-complete on org mode
-  (require 'org-ac)
-  (org-ac/config-default)
+    ;; helping with auto-complete on org mode
+    (require 'org-ac)
+    (org-ac/config-default)
 
-  ;; highlight code in code blocks and enable the evaluation of them
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((R . t)
-     (org . t)
-     (latex . t)
-     (emacs-lisp . t)
-     (gnuplot . t)
-     (C . t)
-     (shell . t)
-     (python . t)
-     ))
+    ;; highlight code in code blocks and enable the evaluation of them
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((R . t)
+       (org . t)
+       (latex . t)
+       (emacs-lisp . t)
+       (gnuplot . t)
+       (C . t)
+       (shell . t)
+       (python . t)
+       ))
 
-  (require 'ox-latex)
-  (setq org-src-fontify-natively t) ;; can see higlighting in org mode file
+    (require 'ox-latex)
+    (setq org-src-fontify-natively t) ;; can see higlighting in org mode file
 
-  ;; encryptions headlines in org mode
-  (require 'org-crypt)
-  (org-crypt-use-before-save-magic)
-  (setq org-tags-exclude-from-inheritance (quote ("crypt")))
-  ;; GPG key to use for encryption
-  ;; either the Key ID or set to nil to use symmetric encryption.
-  (setq org-crypt-key nil)
+    ;; encryptions headlines in org mode
+    (require 'org-crypt)
+    (org-crypt-use-before-save-magic)
+    (setq org-tags-exclude-from-inheritance (quote ("crypt")))
+    ;; GPG key to use for encryption
+    ;; either the Key ID or set to nil to use symmetric encryption.
+    (setq org-crypt-key nil)
 
-  ;; fancy priorities
-  (use-package org-fancy-priorities
-    :ensure t
-    :hook
-    (org-mode . org-fancy-priorities-mode)
-    :config
-    (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
+    ;; fancy priorities
+    (use-package org-fancy-priorities
+      :ensure t
+      :hook
+      (org-mode . org-fancy-priorities-mode)
+      :config
+      (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
 
     ;; keep clock history persistent through sessions
     (setq org-clock-persist 'history)
@@ -482,6 +483,8 @@
 
       ;; projectile
       (projectile-mode +1)
+      ;; projectile
+      (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 
       (global-linum-mode -1)
 
@@ -563,32 +566,38 @@
       ;; dired-recent show recent visited directories
       (dired-recent-mode 1)
       (use-package session
-      :ensure t
-      ;:pin melpa-stable
-      :config
-      (progn
-        (setq session-save-file (expand-file-name "~/.emacs.d/.session"))
-        (add-hook 'after-init-hook 'session-initialize)
+        :ensure t
+                                            ;:pin melpa-stable
+        :config
+        (progn
+          (setq session-save-file (expand-file-name "~/.emacs.d/.session"))
+          (add-hook 'after-init-hook 'session-initialize)
 
-        ;; save a bunch of variables to the desktop file
-        ;; for lists specify the len of the maximal saved data also
-        (setq desktop-globals-to-save
-              (append '((extended-command-history . 30)
-                        (file-name-history        . 100)
-                        (grep-history             . 30)
-                        (compile-history          . 30)
-                        (minibuffer-history       . 50)
-                        (query-replace-history    . 60)
-                        (read-expression-history  . 60)
-                        (regexp-history           . 60)
-                        (regexp-search-ring       . 20)
-                        (search-ring              . 20)
-                        (comint-input-ring        . 50)
-                        (shell-command-history    . 50)
-                        desktop-missing-file-warning
-                        tags-file-name
-                        register-alist)))
-        )))
+          ;; save a bunch of variables to the desktop file
+          ;; for lists specify the len of the maximal saved data also
+          (setq desktop-globals-to-save
+                (append '((extended-command-history . 30)
+                          (file-name-history        . 100)
+                          (grep-history             . 30)
+                          (compile-history          . 30)
+                          (minibuffer-history       . 50)
+                          (query-replace-history    . 60)
+                          (read-expression-history  . 60)
+                          (regexp-history           . 60)
+                          (regexp-search-ring       . 20)
+                          (search-ring              . 20)
+                          (comint-input-ring        . 50)
+                          (shell-command-history    . 50)
+                          desktop-missing-file-warning
+                          tags-file-name
+                          register-alist)))))
+
+      ;; some custom shell commands
+      (define-key global-map (kbd "C-: c q") (lambda ()
+                                               (interactive)
+                                               (setq shell-file-name "zsh")
+                                               (setq shell-command-switch "-ic")
+                                               (shell-command "a_cwaccesstoken"))))
 
 
     (when personal_stuff (extra_customize))
@@ -638,56 +647,56 @@
 
 *** lsp-mode
     #+BEGIN_SRC emacs-lisp
-        ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-        (setq lsp-keymap-prefix "C-q")
+      ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+      (setq lsp-keymap-prefix "C-q")
 
-        (use-package pyvenv
-          :ensure t
-          :diminish
-          :config
-          (setq pyvenv-mode-line-indicator
-                '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] ")))
-          (pyvenv-mode +1))
+      (use-package pyvenv
+        :ensure t
+        :diminish
+        :config
+        (setq pyvenv-mode-line-indicator
+              '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] ")))
+        (pyvenv-mode +1))
 
-        (use-package lsp-mode
-            :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-                    (js-mode . lsp)
-                    (typescript-mode . lsp)
+      (use-package lsp-mode
+          :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+                  (js-mode . lsp)
+                  (typescript-mode . lsp)
                     (python-mode . lsp)
-                    ;; if you want which-key integration
-                    (lsp-mode . lsp-enable-which-key-integration))
-            :commands lsp
-            :config
-
-
-
-               ;;   ;; lsp extras
-            ;;     (use-package lsp-ui
-            ;;       :ensure t
-            ;;       :config
-            ;;       (setq lsp-ui-sideline-ignore-duplicate t)
-            ;;       (add-hook 'lsp-mode-hook 'lsp-ui-mode))
-
-            ;;     ;; local configurations
-            ;;     (add-hook 'hack-local-variables-hook
-            ;; 	  (lambda () (when (derived-mode-p 'XXX-mode) (lsp))))
-                  )
-
-            ;; ;; lsp-treemacs
-            ;; (use-package lsp-treemacs
-            ;;   :ensure t
-            ;;   :config (lsp-treemacs-sync-mode 1
-                      ;;			))
-
-
-        ;; hl-todo-mode: for highlighting todo keywords
-        (use-package hl-todo
-          :ensure t
+                  ;; if you want which-key integration
+                  (lsp-mode . lsp-enable-which-key-integration))
+          :commands lsp
           :config
-          (setq hl-todo-keyword-faces
-                '(("todo"   . "#ffff00")
-                  ("TODO"   . "#ffff00")))
-          (global-hl-todo-mode))
+
+
+
+             ;;   ;; lsp extras
+          ;;     (use-package lsp-ui
+          ;;       :ensure t
+          ;;       :config
+          ;;       (setq lsp-ui-sideline-ignore-duplicate t)
+          ;;       (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+          ;;     ;; local configurations
+          ;;     (add-hook 'hack-local-variables-hook
+          ;; 	  (lambda () (when (derived-mode-p 'XXX-mode) (lsp))))
+                )
+
+          ;; ;; lsp-treemacs
+          ;; (use-package lsp-treemacs
+          ;;   :ensure t
+          ;;   :config (lsp-treemacs-sync-mode 1
+                    ;;			))
+
+
+      ;; hl-todo-mode: for highlighting todo keywords
+      (use-package hl-todo
+        :ensure t
+        :config
+        (setq hl-todo-keyword-faces
+              '(("todo"   . "#ffff00")
+                ("TODO"   . "#ffff00")))
+        (global-hl-todo-mode))
     #+END_SRC
 
 *** Indium
