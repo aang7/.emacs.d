@@ -183,7 +183,11 @@
             go-translate
             jump-char
             session
-            dired-recent))
+            dired-recent
+            zerodark-theme
+            yaml-mode
+            all-the-icons
+            forge))
 
     (dolist (pack packages-to-install)
       (ensure-package-installed pack))
@@ -597,7 +601,10 @@
                                                (interactive)
                                                (setq shell-file-name "zsh")
                                                (setq shell-command-switch "-ic")
-                                               (shell-command "a_cwaccesstoken"))))
+                                               (shell-command "a_cwaccesstoken")))
+      ;; set zerodark theme
+      (load-theme 'zerodark t)
+      (zerodark-setup-modeline-format))
 
 
     (when personal_stuff (extra_customize))
