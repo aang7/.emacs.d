@@ -115,6 +115,27 @@
       (if (file-exists-p filename)
           (insert (concat "[[file:" filename "]]")))
       (org-display-inline-images))
+
+    (defun my-insert-file-name (filename &optional args)
+      "Insert name of file FILENAME into buffer after point.
+
+      Prefixed with \\[universal-argument], expand the file name to
+      its fully canocalized path.  See `expand-file-name'.
+
+      Prefixed with \\[negative-argument], use relative path to file
+      name from current directory, `default-directory'.  See
+      `file-relative-name'.
+
+      The default with no prefix is to insert the file name exactly as
+      it appears in the minibuffer prompt."
+      ;; Based on insert-file in Emacs -- ashawley 20080926
+      (interactive "*fInsert file name: \nP")
+      (cond ((eq '- args)
+             (insert (file-relative-name filename)))
+            ((not (null args))
+             (insert (expand-file-name filename)))
+            (t
+             (insert filename))))
   #+END_SRC
 
 * Packages to Install
@@ -187,7 +208,9 @@
             zerodark-theme
             yaml-mode
             all-the-icons
-            forge))
+            forge
+            org-tree-slide
+            ox-jira))
 
     (dolist (pack packages-to-install)
       (ensure-package-installed pack))
@@ -314,6 +337,8 @@
     (global-set-key (kbd "C-x x") 'ace-jump-mode-pop-mark)
     (global-set-key (kbd "C-: s") 'jump-char-forward)
     (global-set-key (kbd "C-: a") 'jump-char-backward)
+    (global-set-key (kbd "C-: e i") 'ido-mode)
+
 
     ;; move to the last recent buffer
     (global-set-key (kbd "C-x a")  'mode-line-other-buffer)
@@ -352,7 +377,7 @@
     ;; swipper and ivy for searching regexp
     (global-set-key "\C-s" 'swiper-isearch)
     (global-set-key "\C-r" 'swiper-isearch-backward)
-        
+
     ;; (global-set-key (kbd "<f6>") 'ivy-resume)
     ;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
     ;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
@@ -390,6 +415,11 @@
     (define-key org-mode-map (kbd "C-M-y") 'my-org-screenshot)
     (define-key org-mode-map (kbd "C-: e e") 'org-encrypt-entry)
     (define-key org-mode-map (kbd "C-: e d") 'org-decrypt-entry)
+    (define-key global-map (kbd "C-. SPC") 'company-complete)
+    (define-key global-map (kbd "C-: i f") 'my-insert-file-name)
+    (define-key global-map (kbd "C-: e b") 'browse-web)
+    (define-key global-map (kbd "C-: e c") 'company-mode)
+    (define-key global-map (kbd "C-: e a") 'auto-complete-mode)
   #+END_SRC
 
 * Ui stuff
@@ -471,6 +501,10 @@
     ;; keep clock history persistent through sessions
     (setq org-clock-persist 'history)
     (org-clock-persistence-insinuate)
+
+    ;; face for bold text
+    (add-to-list 'org-emphasis-alist
+                 '("*" (:foreground "dark cyan")))
   #+END_SRC
 
 * More personal stuff
@@ -481,9 +515,6 @@
 
     (defun extra_customize ()
       "Extra personal stuff"
-
-      (when (memq window-system '(mac ns x))
-        (exec-path-from-shell-initialize))
 
       ;; projectile
       (projectile-mode +1)
@@ -603,8 +634,32 @@
                                                (setq shell-command-switch "-ic")
                                                (shell-command "a_cwaccesstoken")))
       ;; set zerodark theme
-      (load-theme 'zerodark t)
-      (zerodark-setup-modeline-format))
+      (load-theme 'doom-palenight t)
+      ;;(zerodark-setup-modeline-format)
+
+      ;; add exec path values of terminal on emacs
+      ;; and set the default behaviour to right meta key
+      ;; this is just for mac os
+      (when (memq window-system '(mac ns x))
+        (exec-path-from-shell-initialize)
+        (setq ns-alternate-modifier 'meta)
+        (setq ns-right-alternate-modifier 'none))
+
+      ;; give color to compilation output buffers
+      (add-hook 'compilation-filter-hook
+                  (lambda ()
+                    (ansi-color-apply-on-region compilation-filter-start (point))))
+      (defun timestamp ()
+        (interactive)
+        (insert (format-time-string "%Y-%m-%d %H:%M:%S")))
+
+      (defun my-org-timer-hook ()
+        (message "My timer done %s" (timestamp))
+        (add-to-list 'display-buffer-alist '("*Async Shell Command*" display-buffer-no-window (nil)))
+        (async-shell-command
+         "afplay /Users/aang/Downloads/mixkit-falling-game-over-1942.wav && say timer done"))
+
+      (add-hook 'org-timer-done-hook 'my-org-timer-hook))
 
 
     (when personal_stuff (extra_customize))
