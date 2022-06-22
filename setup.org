@@ -244,6 +244,7 @@
     (global-undo-tree-mode t)
     (toggle-truncate-lines 1)
     (global-hl-line-mode nil)
+    (global-linum-mode -1)
 
     ;; add hooks
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1) (olivetti-mode nil)))
@@ -415,6 +416,7 @@
     (define-key org-mode-map (kbd "C-M-y") 'my-org-screenshot)
     (define-key org-mode-map (kbd "C-: e e") 'org-encrypt-entry)
     (define-key org-mode-map (kbd "C-: e d") 'org-decrypt-entry)
+    (define-key org-mode-map (kbd "C-: e a") 'org-agenda)
     (define-key global-map (kbd "C-. SPC") 'company-complete)
     (define-key global-map (kbd "C-: i f") 'my-insert-file-name)
     (define-key global-map (kbd "C-: e b") 'browse-web)
@@ -518,10 +520,7 @@
 
       ;; projectile
       (projectile-mode +1)
-      ;; projectile
       (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-
-      (global-linum-mode -1)
 
       ;; minted for listings in export code docuements highlighting
       (setq org-latex-listings 'minted
@@ -539,13 +538,6 @@
       (setq ido-enable-flex-matching t)
       (ido-mode 1)
 
-      ;; amx
-      ;; (use-package amx
-      ;;  :ensure t
-      ;;  :config
-      ;;  (amx-mode t)
-      ;;  )
-
       ;; ;; auto indent between {}, [], and () when pressing return in-between.
       (defun indent-between-pair (&rest _ignored)
         (newline)
@@ -559,17 +551,18 @@
 
 
       ;; set monaco font even in org mode.
-      ;;(set-face-attribute 'default nil :font "Monaco-14")
-      ;;(set-face-attribute 'fixed-pitch nil :font "Monaco-16")
-      (set-face-attribute 'variable-pitch nil :font "Monaco-14")
+      ;; (set-face-attribute 'default nil :font "Monaco-14")
+      ;; (set-face-attribute 'fixed-pitch nil :font "Monaco-16")
       ;; (dolist (face '(default fixed-pitch))
-      ;;(set-face-attribute `,face nil :font "Monaco-14"))
+      ;; (set-face-attribute `,face nil :font "Monaco-14"))
+      (set-face-attribute 'variable-pitch nil :font "Monaco-14")
 
       ;; (set-face-background 'hl-line "DarkOliveGreen")
       (set-face-background 'hl-line nil)
       ;;To keep syntax highlighting in ;TODO: he current line:
       (set-face-foreground 'highlight nil)
       (set-face-foreground 'hl-line nil)
+
       ;; org mode
       ;; Improve org mode looks
       (setq org-startup-indented t
@@ -588,21 +581,21 @@
       (require 'go-translate)
 
       (setq gts-translate-list '(("en" "es")))
-
       (setq gts-default-translator
             (gts-translator
              :picker (gts-prompt-picker)
              :engines (list (gts-google-engine))
              :render (gts-buffer-render)))
       (global-set-key (kbd "C-: t") 'gts-do-translate)
+
       ;; undo-tree customs
       (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
       (setq undo-tree-visualizer-timestamps t)
+
       ;; dired-recent show recent visited directories
       (dired-recent-mode 1)
       (use-package session
         :ensure t
-                                            ;:pin melpa-stable
         :config
         (progn
           (setq session-save-file (expand-file-name "~/.emacs.d/.session"))
@@ -649,6 +642,8 @@
       (add-hook 'compilation-filter-hook
                   (lambda ()
                     (ansi-color-apply-on-region compilation-filter-start (point))))
+
+      ;; some custom defuns
       (defun timestamp ()
         (interactive)
         (insert (format-time-string "%Y-%m-%d %H:%M:%S")))
@@ -659,7 +654,27 @@
         (async-shell-command
          "afplay /Users/aang/Downloads/mixkit-falling-game-over-1942.wav && say timer done"))
 
-      (add-hook 'org-timer-done-hook 'my-org-timer-hook))
+      (add-hook 'org-timer-done-hook 'my-org-timer-hook)
+
+      ;; blamer - for see blame who made the code - vscode gitlens inspired
+      (use-package blamer
+        :ensure t
+        :defer 20
+        :custom
+        (blamer-idle-time 0.3)
+        (blamer-min-offset 70)
+        :custom-face
+        (blamer-face ((t :foreground "#7a88cf"
+                         :background nil
+                         :height 140
+                         :italic t)))
+        :config
+        (global-blamer-mode 1)
+        :bind
+        (("s-i" . blamer-show-commit-info)))
+
+      ;; helm-ag
+      (setq helm-ag-insert-at-point 'symbol))
 
 
     (when personal_stuff (extra_customize))
