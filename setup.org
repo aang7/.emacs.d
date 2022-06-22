@@ -238,7 +238,7 @@
     (scroll-bar-mode -1)
     (electric-indent-mode 1)
     (column-number-mode t)
-    (electric-pair-mode t)
+    (electric-pair-mode nil)
     (dumb-jump-mode 1)
     (beacon-mode t)
     (global-undo-tree-mode t)
@@ -709,8 +709,6 @@
 
 *** lsp-mode
     #+BEGIN_SRC emacs-lisp
-      ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-      (setq lsp-keymap-prefix "C-q")
 
       (use-package pyvenv
         :ensure t
@@ -719,37 +717,19 @@
         (setq pyvenv-mode-line-indicator
               '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] ")))
         (pyvenv-mode +1))
-
+      ;; set prefix for lsp-command-keymap
+      (setq lsp-keymap-prefix "C-q")
       (use-package lsp-mode
-          :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-                  (js-mode . lsp)
-                  (typescript-mode . lsp)
-                    (python-mode . lsp)
-                  ;; if you want which-key integration
-                  (lsp-mode . lsp-enable-which-key-integration))
-          :commands lsp
-          :config
-
-
-
-             ;;   ;; lsp extras
-          ;;     (use-package lsp-ui
-          ;;       :ensure t
-          ;;       :config
-          ;;       (setq lsp-ui-sideline-ignore-duplicate t)
-          ;;       (add-hook 'lsp-mode-hook 'lsp-ui-mode))
-
-          ;;     ;; local configurations
-          ;;     (add-hook 'hack-local-variables-hook
-          ;; 	  (lambda () (when (derived-mode-p 'XXX-mode) (lsp))))
-                )
-
-          ;; ;; lsp-treemacs
-          ;; (use-package lsp-treemacs
-          ;;   :ensure t
-          ;;   :config (lsp-treemacs-sync-mode 1
-                    ;;			))
-
+        :hook
+        ((js-mode . lsp)
+         (typescript-mode . lsp)
+         (python-mode . lsp)
+         (lsp-mode . lsp-enable-which-key-integration))
+        :commands lsp
+        :config
+        ;; lsp extras
+        (use-package lsp-ui
+          :ensure t))
 
       ;; hl-todo-mode: for highlighting todo keywords
       (use-package hl-todo
