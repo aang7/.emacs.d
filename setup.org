@@ -216,7 +216,8 @@
             marginalia
             vertico
             orderless
-            consult-projectile))
+            consult-projectile
+            consult-ag))
 
     (dolist (pack packages-to-install)
       (ensure-package-installed pack))
@@ -292,8 +293,8 @@
 
     ;; helm
     ;; (helm-mode 1)
+    ;; (helm-autoresize-mode 1)
     ;; (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
-    (helm-autoresize-mode 1)
 
     ;; which key
     (which-key-mode 1)
@@ -316,7 +317,7 @@
     (global-set-key (kbd "C-c u") 'uncomment-region)
 
     ;; multiple cursors
-    (global-set-key(kbd "C-c m c") 'mc/edit-lines)
+    (global-set-key (kbd "C-c m c") 'mc/edit-lines)
     (global-set-key (kbd "C->") 'mc/mark-next-like-this)
     (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
     (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
@@ -358,7 +359,7 @@
     ;; (global-set-key (kbd "M-x") 'helm-M-x)
     ;; (global-set-key (kbd "C-x b") 'helm-buffers-list)
     ;; (global-set-key (kbd "C-. ,") 'helm-find)
-    (global-set-key (kbd "C-. .") 'helm-ag-project-root)
+    (global-set-key (kbd "C-. .") 'consult-ag--with-symbol)
 
     ;; move windows, even in org-mode
     (setq is-windows (equal system-type 'windows-nt))
@@ -400,7 +401,6 @@
 
     ;; magit
     (global-set-key (kbd "C-x g") 'magit-status)
-    (global-set-key (kbd "C-x p") 'magit-push)
 
     ;; recentf
     (global-set-key (kbd "C-. r") 'consult-recent-file)
@@ -687,7 +687,7 @@
         (("s-i" . blamer-show-commit-info)))
 
       ;; helm-ag
-      (setq helm-ag-insert-at-point 'symbol)
+      ;; (setq helm-ag-insert-at-point 'symbol)
 
       ;; experimenting stuff
       ;; Enable vertico
@@ -868,6 +868,14 @@
       ;;;; 4. locate-dominating-file
         ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
         )
+      ;; winner-mode
+      (winner-mode t)
+
+      ;; custom fix for having symbol-at-point support with consult-ag
+      (require 'thingatpt)
+      (defun consult-ag--with-symbol ()
+        (interactive)
+        (consult-ag nil (thing-at-point 'symbol)))
 
       )
 
