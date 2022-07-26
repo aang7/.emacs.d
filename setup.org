@@ -428,8 +428,10 @@
     (define-key global-map (kbd "C-: e b") 'browse-web)
     (define-key global-map (kbd "C-: e c") 'company-mode)
     (define-key global-map (kbd "C-: e a") 'auto-complete-mode)
+    (define-key global-map (kbd "C-: e y") 'yas-minor-mode)
     (define-key global-map (kbd "C-: f f") 'fold-this)
     (define-key global-map (kbd "C-: f u") 'fold-this-unfold-all)
+    (define-key global-map (kbd "C-: :") 'treemacs-select-window)
 
     ;; consult projectile
     (define-key global-map (kbd "C-x p p") 'consult-projectile-switch-project)
@@ -877,7 +879,24 @@
         (interactive)
         (consult-ag nil (thing-at-point 'symbol)))
 
-      )
+      ;; doom mode line
+      (use-package doom-modeline
+        :ensure t
+        :config
+        (doom-modeline-mode 1)
+        (setq doom-modeline-height 5)
+        (set-face-attribute 'mode-line nil :height 150)
+        (set-face-attribute 'mode-line-inactive nil :height 150)
+        (display-battery-mode +1))
+
+      ;; hide details in dired mode by default
+      (add-hook 'dired-mode-hook
+                (lambda ()
+                  (dired-hide-details-mode)
+                  (dired-sort-toggle-or-edit)))
+      ;; font size
+      (set-face-attribute 'default nil :height 165))
+
 
 
     (when personal_stuff (extra_customize))
@@ -894,9 +913,16 @@
     #+END_SRC
     
 *** Typescript
+To make dap-node work I had to look at [[https://github.com/emacs-lsp/dap-mode/issues/554#issuecomment-1171256089][this comment]] on gh.
     #+BEGIN_SRC emacs-lisp
       (use-package typescript-mode
-	:ensure t)
+        :ensure t
+        :config
+        ;; (setq typescript-indent-level 2)
+        (require 'dap-node)
+        (dap-node-setup))
+
+
     #+END_SRC
 
 *** Tide

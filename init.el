@@ -17,3 +17,4 @@
 (org-babel-load-file (expand-file-name "setup.org" user-emacs-directory))
 
 (put 'dired-find-alternate-file 'disabled nil)
+(put 'narrow-to-region 'disabled nil)
