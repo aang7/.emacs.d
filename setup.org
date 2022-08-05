@@ -430,7 +430,8 @@
     (define-key global-map (kbd "C-: e a") 'auto-complete-mode)
     (define-key global-map (kbd "C-: e y") 'yas-minor-mode)
     (define-key global-map (kbd "C-: f f") 'fold-this)
-    (define-key global-map (kbd "C-: f u") 'fold-this-unfold-all)
+    (define-key global-map (kbd "C-: f U") 'fold-this-unfold-all)
+    (define-key global-map (kbd "C-: f u") 'fold-this-unfold-at-point)
     (define-key global-map (kbd "C-: :") 'treemacs-select-window)
 
     ;; consult projectile
@@ -953,6 +954,20 @@ To make dap-node work I had to look at [[https://github.com/emacs-lsp/dap-mode/i
 
 *** lsp-mode
     #+BEGIN_SRC emacs-lisp
+      ;; web-mode
+
+      (use-package web-mode
+        :ensure t
+        :mode (("\\.js\\'" . web-mode)
+               ("\\.jsx\\'" .  web-mode)
+               ("\\.ts\\'" . web-mode)
+               ("\\.tsx\\'" . web-mode)
+               ("\\.html\\'" . web-mode))
+        :commands web-mode)
+
+      (setq web-mode-markup-indent-offset 2)
+      (setq web-mode-code-indent-offset 2)
+      (setq web-mode-css-indent-offset 2)
 
       (use-package pyvenv
         :ensure t
@@ -965,15 +980,16 @@ To make dap-node work I had to look at [[https://github.com/emacs-lsp/dap-mode/i
       (setq lsp-keymap-prefix "C-q")
       (use-package lsp-mode
         :hook
-        ((js-mode . lsp)
+        ((web-mode . lsp-deferred)
+         (js-mode . lsp)
          (typescript-mode . lsp)
          (python-mode . lsp)
          (lsp-mode . lsp-enable-which-key-integration))
-        :commands lsp
-        :config
-        ;; lsp extras
-        (use-package lsp-ui
-          :ensure t))
+        :commands lsp)
+
+      ;; lsp extras
+      (use-package lsp-ui
+          :ensure t)
 
       ;; hl-todo-mode: for highlighting todo keywords
       (use-package hl-todo
