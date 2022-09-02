@@ -422,7 +422,7 @@
     (define-key org-mode-map (kbd "C-M-y") 'my-org-screenshot)
     (define-key org-mode-map (kbd "C-: o e") 'org-encrypt-entry)
     (define-key org-mode-map (kbd "C-: o d") 'org-decrypt-entry)
-    (define-key org-mode-map (kbd "C-: o a") 'org-agenda)
+    (define-key global-map (kbd "C-: o a") 'org-agenda)
     (define-key global-map (kbd "C-. SPC") 'company-complete)
     (define-key global-map (kbd "C-: i f") 'my-insert-file-name)
     (define-key global-map (kbd "C-: e b") 'browse-web)
@@ -505,7 +505,7 @@
     ;; GPG key to use for encryption
     ;; either the Key ID or set to nil to use symmetric encryption.
     (setq org-crypt-key nil)
-
+    (setq org-log-done t)
     ;; fancy priorities
     (use-package org-fancy-priorities
       :ensure t
@@ -662,13 +662,13 @@
       ;; some custom defuns
       (defun timestamp ()
         (interactive)
-        (insert (format-time-string "%Y-%m-%d %H:%M:%S")))
+        (format-time-string "%d-%m-%Y %H:%M:%S"))
 
       (defun my-org-timer-hook ()
-        (message "My timer done %s" (timestamp))
+        (message "My timer done %s" (propertize (format "%s" (timestamp)) 'face '(:foreground "green")))
         (add-to-list 'display-buffer-alist '("*Async Shell Command*" display-buffer-no-window (nil)))
         (async-shell-command
-         "afplay /Users/aang/Downloads/mixkit-falling-game-over-1942.wav && say timer done"))
+         "afplay ~/Downloads/mixkit-falling-game-over-1942.wav && say timer done"))
 
       (add-hook 'org-timer-done-hook 'my-org-timer-hook)
 
