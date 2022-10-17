@@ -587,7 +587,7 @@
             org-image-actual-width '(300))
 
       (setq org-todo-keywords
-            '((sequence "TODO" "FEEDBACK" "VERIFY" "INPROGRESS" "|" "DONE" "BLOCKED" "CANCELED")))
+            '((sequence "TODO" "FEEDBACK" "VERIFY" "INPROGRESS" "|" "PAUSED" "DONE" "BLOCKED" "CANCELED")))
       ;; skewer mode
       (add-hook 'js2-mode-hook 'skewer-mode)
       (add-hook 'css-mode-hook 'skewer-css-mode)
@@ -923,13 +923,12 @@ To make dap-node work I had to look at [[https://github.com/emacs-lsp/dap-mode/i
       (use-package typescript-mode
         :ensure t
         :config
-        ;; (setq typescript-indent-level 2)
         (require 'dap-node)
         (dap-node-setup))
 
 
     #+END_SRC
-
+    
 *** Tide
 
     #+BEGIN_SRC emacs-lisp
