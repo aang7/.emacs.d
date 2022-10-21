@@ -153,9 +153,7 @@
             expand-region
             multiple-cursors
             org-bullets
-            ;;iy-go-to-char
             helm
-            ;;autopair
             ace-jump-mode
             twittering-mode
             use-package
@@ -218,7 +216,11 @@
             orderless
             consult-projectile
             consult-ag
-            mwim))
+            mwim
+            dap-mode
+            org-present
+            olivetti
+            vterm))
 
     (dolist (pack packages-to-install)
       (ensure-package-installed pack))
@@ -383,22 +385,9 @@
     (global-set-key (kbd "<M-s-right>")  'buf-move-right)
     (global-set-key (kbd "<M-s-up>")     'buf-move-up)
 
-    ;; swipper and ivy for searching regexp
+    ;; swipper for searching regexp
     (global-set-key "\C-s" 'swiper-isearch)
     (global-set-key "\C-r" 'swiper-isearch-backward)
-
-    ;; (global-set-key (kbd "<f6>") 'ivy-resume)
-    ;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-    ;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-    ;; (global-set-key (kbd "<f1> l") 'counsel-load-library)
-    ;; (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-    ;; (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-    ;; (global-set-key (kbd "C-c g") 'counsel-git)
-    ;; (global-set-key (kbd "C-c j") 'counsel-git-grep)
-    ;; (global-set-key (kbd "C-c k") 'counsel-ag)
-    ;; (global-set-key (kbd "C-x l") 'counsel-locate)
-    ;; (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
-    ;; (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
 
     ;; magit
     (global-set-key (kbd "C-x g") 'magit-status)
@@ -597,7 +586,7 @@
       ;; helps language translation
       (require 'go-translate)
 
-      (setq gts-translate-list '(("en" "es")))
+      (setq gts-translate-list '(("en" "es") ("es" "en")))
       (setq gts-default-translator
             (gts-translator
              :picker (gts-prompt-picker)
@@ -644,8 +633,7 @@
                                                (setq shell-command-switch "-ic")
                                                (shell-command "a_cwaccesstoken")))
       ;; set zerodark theme
-      (load-theme 'doom-palenight t)
-      ;;(zerodark-setup-modeline-format)
+      (load-theme 'doom-vibrant t)
 
       ;; add exec path values of terminal on emacs
       ;; and set the default behaviour to right meta key
@@ -686,7 +674,7 @@
                          :height 140
                          :italic t)))
         :config
-        (global-blamer-mode nil)
+        (global-blamer-mode -1)
         :bind
         (("s-i" . blamer-show-commit-info)))
 
@@ -700,18 +688,10 @@
         :init
         (vertico-mode)
 
-        ;; Different scroll margin
-        ;; (setq vertico-scroll-margin 0)
-
-        ;; Show more candidates
-        ;; (setq vertico-count 20)
-
         ;; Grow and shrink the Vertico minibuffer
-        ;; (setq vertico-resize t)
-
+        (setq vertico-resize t)
         ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
-        ;; (setq vertico-cycle t)
-        )
+        (setq vertico-cycle t))
 
       ;; A few more useful configurations...
       (use-package emacs
@@ -866,12 +846,8 @@
         ;; (setq consult-project-function #'consult--default-project--function)
       ;;;; 2. projectile.el (projectile-project-root)
         (autoload 'projectile-project-root "projectile")
-        (setq consult-project-function (lambda (_) (projectile-project-root)))
-      ;;;; 3. vc.el (vc-root-dir)
-        ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
-      ;;;; 4. locate-dominating-file
-        ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
-        )
+        (setq consult-project-function (lambda (_) (projectile-project-root))))
+
       ;; winner-mode
       (winner-mode t)
 
@@ -887,20 +863,78 @@
         :config
         (doom-modeline-mode 1)
         (setq doom-modeline-height 5)
-        (set-face-attribute 'mode-line nil :height 150)
-        (set-face-attribute 'mode-line-inactive nil :height 150)
+        (set-face-attribute 'mode-line nil :height 130)
+        (set-face-attribute 'mode-line-inactive nil :height 120)
         (display-battery-mode +1))
 
       ;; hide details in dired mode by default
       (add-hook 'dired-mode-hook
                 (lambda ()
-                  (dired-hide-details-mode)
-                  (dired-sort-toggle-or-edit)))
+                  (dired-hide-details-mode)))
       ;; font size
       (set-face-attribute 'default nil :height 165)
       ;; move line where I mean
       (global-set-key (kbd "C-a") 'mwim-beginning)
-      (global-set-key (kbd "C-e") 'mwim-end))
+      (global-set-key (kbd "C-e") 'mwim-end)
+
+      ;; org-present config
+      (defun my/org-present-start ()
+        ;; tweak font sizes
+        (setq-local face-remapping-alist '((default (:height 1.5) variable-pitch)
+                                           (header-line (:height 4.0) variable-pitch)
+                                           (org-document-title (:height 1.75) org-document-title)
+                                           (org-code (:height 1.55) org-code)
+                                           (org-verbatim (:height 1.55) org-verbatim)
+                                           (org-block (:height 1.25) org-block)
+                                           (org-block-begin-line (:height 0.7) org-block)))
+
+        ;; Set a blank header line string to create blank space at the top
+        (setq header-line-format " ")
+
+        ;; Display inline images automatically
+        (org-display-inline-images)
+
+        ;; Center the presentation and wrap lines
+        ;; (visual-fill-column-mode 1)
+        ;; (visual-line-mode 1)
+        (olivetti-mode 1)
+        )
+
+      (defun my/org-present-end ()
+        ;; Reset font customizations
+        (setq-local face-remapping-alist '((default variable-pitch default)))
+
+        ;; Clear the header line string so that it isn't displayed
+        (setq header-line-format nil)
+
+        ;; Stop displaying inline images
+        (org-remove-inline-images)
+
+        ;; Stop centering the document
+        ;;(visual-fill-column-mode 0)
+        ;;(visual-line-mode 0)
+        (olivetti-mode 0)
+        )
+
+      (defun my/org-present-prepare-slide (buffer-name heading)
+        ;; Show only top-level headlines
+        (org-overview)
+
+        ;; Unfold the current entry
+        (org-show-entry)
+
+        ;; Show only direct subheadings of the slide but don't expand them
+        (org-show-children))
+
+      ;; Register hooks with org-present
+      (add-hook 'org-present-mode-hook 'my/org-present-start)
+      (add-hook 'org-present-mode-quit-hook 'my/org-present-end)
+      (add-hook 'org-present-after-navigate-functions 'my/org-present-prepare-slide)
+
+      ;; workaround when in Mac OS to show dired mode sorted with dirs first
+      (require 'ls-lisp)
+      (setq ls-lisp-dirs-first t)
+      (setq ls-lisp-use-insert-directory-program nil))
 
 
 
