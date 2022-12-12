@@ -220,7 +220,8 @@
             dap-mode
             org-present
             olivetti
-            vterm))
+            vterm
+            lsp-java))
 
     (dolist (pack packages-to-install)
       (ensure-package-installed pack))
@@ -233,7 +234,7 @@
     ;; (require 'iy-go-to-char)
     ;; (require 'auto-indent-mode)
     (require 'ace-window)
-    (require 'helm-config)
+    ;;(require 'helm-config)
     (require 'org-bullets)
     (require 'flycheck)
     (require 'yasnippet)
@@ -242,7 +243,6 @@
     ;; global modes
     (global-flycheck-mode)
     (yas-global-mode t)
-    (global-hl-line-mode)
     (tool-bar-mode -1)
     (show-paren-mode t)
     (scroll-bar-mode -1)
@@ -250,10 +250,10 @@
     (column-number-mode t)
     (electric-pair-mode nil)
     (dumb-jump-mode 1)
-    (beacon-mode t)
+    (beacon-mode 0)
     (global-undo-tree-mode t)
     (toggle-truncate-lines 1)
-    (global-hl-line-mode nil)
+    (global-hl-line-mode -1)
     (global-linum-mode -1)
 
     ;; add hooks
@@ -305,7 +305,7 @@
     ;; recent files
     (recentf-mode 1)
     (setq recentf-max-menu-items 25)
-    (setq recentf-max-saved-items 25)
+    (setq recentf-max-saved-items 50)
 
   #+END_SRC
 
@@ -414,12 +414,15 @@
     (define-key org-mode-map (kbd "C-: o d") 'org-decrypt-entry)
     (define-key global-map (kbd "C-: o a") 'org-agenda)
     (define-key global-map (kbd "C-: o o") 'org-capture)
+
+    ;; other
     (define-key global-map (kbd "C-. SPC") 'company-complete)
     (define-key global-map (kbd "C-: i f") 'my-insert-file-name)
     (define-key global-map (kbd "C-: e b") 'browse-web)
     (define-key global-map (kbd "C-: e c") 'company-mode)
     (define-key global-map (kbd "C-: e a") 'auto-complete-mode)
     (define-key global-map (kbd "C-: e y") 'yas-minor-mode)
+    (define-key global-map (kbd "C-: e o") 'olivetti-mode)
     (define-key global-map (kbd "C-: f f") 'fold-this)
     (define-key global-map (kbd "C-: f U") 'fold-this-unfold-all)
     (define-key global-map (kbd "C-: f u") 'fold-this-unfold-at-point)
@@ -468,9 +471,6 @@
     (require 'ox-latex)
     (setq org-src-fontify-natively t) ;; to see highlighting in org src block
 
-    ;; helping with auto-complete on org mode
-    (require 'org-ac)
-    (org-ac/config-default)
 
     ;; highlight code in code blocks and enable the evaluation of them
     (org-babel-do-load-languages
@@ -511,6 +511,10 @@
     ;; face for bold text
     (add-to-list 'org-emphasis-alist
                  '("*" (:foreground "dark cyan")))
+
+    ;; (defun org-babel-edit-prep:cpp (babel-info)
+    ;;   (setq-local buffer-file-name (->> babel-info caddr (alist-get :tangle)))
+    ;;   (lsp))
   #+END_SRC
 
 * More personal stuff
@@ -562,10 +566,10 @@
       (set-face-attribute 'variable-pitch nil :font "Monaco-14")
 
       ;; (set-face-background 'hl-line "DarkOliveGreen")
-      (set-face-background 'hl-line nil)
-      ;;To keep syntax highlighting in ;TODO: he current line:
-      (set-face-foreground 'highlight nil)
-      (set-face-foreground 'hl-line nil)
+      ;; (set-face-background 'hl-line nil)
+      ;; To keep syntax highlighting in ;TODO: he current line:
+      ;; (set-face-foreground 'highlight nil)
+      ;; (set-face-foreground 'hl-line nil)
 
       ;; org mode
       ;; Improve org mode looks
@@ -931,6 +935,44 @@
       (add-hook 'org-present-mode-quit-hook 'my/org-present-end)
       (add-hook 'org-present-after-navigate-functions 'my/org-present-prepare-slide)
 
+      ;; highlight line with the cursor, preserving the colours.
+      ;; (set-face-attribute 'hl-line nil :inherit t :background "gray27")
+
+      (use-package webkit-color-picker
+      :ensure t
+      :bind (("C-c C-p" . webkit-color-picker-show)))
+
+      ;; web beautify
+      (use-package web-beautify
+        :ensure t
+        :config
+        (defun verify-js-beautify-installation ()
+          "check if node package js-beautify is installed
+       if not then, try to install it"
+          (defvar is-installed (shell-command "npm list -g js-beautify"))
+          (defconst SUCCESS_CODE 0)
+          (if (not (eq is-installed SUCCESS_CODE))
+              (progn
+                (print "'js-beautify' is not installed. Trying to install it using npm....")
+                (if (eq (shell-command "npm -g install js-beautify") SUCCESS_CODE)
+                    (print "'js-beautify' succesfully installed.")
+                  (print "Error: `js-beautify' could not be installed.")))))
+        (verify-js-beautify-installation)
+        (eval-after-load 'js2-mode
+          '(add-hook 'js2-mode-hook
+                     (lambda ()
+                       (add-hook 'before-save-hook 'web-beautify-js-buffer t t))))
+
+        (eval-after-load 'sgml-mode
+          '(add-hook 'html-mode-hook
+                     (lambda ()
+                       (add-hook 'before-save-hook 'web-beautify-html-buffer t t))))
+
+        (eval-after-load 'css-mode
+          '(add-hook 'css-mode-hook
+                     (lambda ()
+                       (add-hook 'before-save-hook 'web-beautify-css-buffer t t)))))
+
       ;; workaround when in Mac OS to show dired mode sorted with dirs first
       (require 'ls-lisp)
       (setq ls-lisp-dirs-first t)
@@ -1035,7 +1077,7 @@ To make dap-node work I had to look at [[https://github.com/emacs-lsp/dap-mode/i
         (setq hl-todo-keyword-faces
               '(("todo"   . "#ffff00")
                 ("TODO"   . "#ffff00")))
-        (global-hl-todo-mode))
+        (global-hl-todo-mode -1))
     #+END_SRC
 
 *** Indium
