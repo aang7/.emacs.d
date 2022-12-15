@@ -254,7 +254,6 @@
     (global-undo-tree-mode t)
     (toggle-truncate-lines 1)
     (global-hl-line-mode -1)
-    (global-linum-mode -1)
 
     ;; add hooks
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1) (olivetti-mode nil)))
@@ -483,6 +482,7 @@
        (C . t)
        (shell . t)
        (python . t)
+       (js . t)
        ))
 
     (require 'ox-latex)
@@ -581,10 +581,6 @@
 
       (setq org-todo-keywords
             '((sequence "TODO" "FEEDBACK" "VERIFY" "INPROGRESS" "|" "PAUSED" "DONE" "BLOCKED" "CANCELED")))
-      ;; skewer mode
-      (add-hook 'js2-mode-hook 'skewer-mode)
-      (add-hook 'css-mode-hook 'skewer-css-mode)
-      (add-hook 'html-mode-hook 'skewer-html-mode)
 
       ;; go-translate
       ;; helps language translation
