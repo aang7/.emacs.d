@@ -286,10 +286,11 @@
     (pdf-tools-install)
 
     ;; smartparens
-    (require 'smartparens-config)
-    (smartparens-global-mode nil)
+    ;; (require 'smartparens-config)
+    ;; (smartparens-global-mode nil)
 
-    (add-hook 'text-mode-hook
+    ;; (ad
+     d-hook 'text-mode-hook
               (lambda ()
                 (variable-pitch-mode 1)))
 
@@ -429,6 +430,7 @@
 
     ;; consult projectile
     (define-key global-map (kbd "C-x p p") 'consult-projectile-switch-project)
+    (define-key global-map (kbd "C-: o k") 'consult-yank-from-kill-ring)
   #+END_SRC
 
 * Ui stuff
@@ -440,8 +442,20 @@
     ;; (set-face-foreground 'ac-candidate-face "green")
 
     ;; apply transparency to emacs
-    (add-to-list 'default-frame-alist '(alpha . (100 . 100)))
-    (set-frame-parameter nil 'alpha '(100 . 100))
+    (add-to-list 'default-frame-alist '(alpha . (97 . 90)))
+    (set-frame-parameter nil 'alpha '(90 . 90))
+
+    ;; (set-frame-parameter nil 'alpha-background 75) ; For current frame
+    ;; (add-to-list 'default-frame-alist '(alpha-background . 75)) ; For all new frames henceforth
+    ;; (defun kb/toggle-window-transparency ()
+    ;;   "Toggle transparency."
+    ;;   (interactive)
+    ;;   (let ((alpha-transparency 75))
+    ;;     (pcase (frame-parameter nil 'alpha-background)
+    ;;       (alpha-transparency (set-frame-parameter nil 'alpha-background 100))
+    ;;       (t (set-frame-parameter nil 'alpha-background alpha-transparency)))))
+
+
     ;; telephone-line
     (require 'telephone-line)
     (setq telephone-line-primary-left-separator 'telephone-line-cubed-left
@@ -483,6 +497,7 @@
        (shell . t)
        (python . t)
        (js . t)
+       (sql . t)
        ))
 
     (require 'ox-latex)
@@ -580,7 +595,7 @@
             org-image-actual-width '(300))
 
       (setq org-todo-keywords
-            '((sequence "TODO" "FEEDBACK" "VERIFY" "INPROGRESS" "|" "PAUSED" "DONE" "BLOCKED" "CANCELED")))
+            '((sequence "TODO" "FEEDBACK" "VERIFY" "INPROGRESS" "DEPENDENT" "|" "PAUSED" "DONE" "BLOCKED" "CANCELED")))
 
       ;; go-translate
       ;; helps language translation
@@ -600,41 +615,49 @@
 
       ;; dired-recent show recent visited directories
       (dired-recent-mode 1)
-      (use-package session
-        :ensure t
-        :config
-        (progn
-          (setq session-save-file (expand-file-name "~/.emacs.d/.session"))
-          (add-hook 'after-init-hook 'session-initialize)
+      ;; (use-package session
+      ;;   :ensure t
+      ;;   :config
+      ;;   (progn
+      ;;     (setq session-save-file (expand-file-name "~/.emacs.d/.session"))
+      ;;     (add-hook 'after-init-hook 'session-initialize)
 
-          ;; save a bunch of variables to the desktop file
-          ;; for lists specify the len of the maximal saved data also
-          (setq desktop-globals-to-save
-                (append '((extended-command-history . 30)
-                          (file-name-history        . 100)
-                          (grep-history             . 30)
-                          (compile-history          . 30)
-                          (minibuffer-history       . 50)
-                          (query-replace-history    . 60)
-                          (read-expression-history  . 60)
-                          (regexp-history           . 60)
-                          (regexp-search-ring       . 20)
-                          (search-ring              . 20)
-                          (comint-input-ring        . 50)
-                          (shell-command-history    . 50)
-                          desktop-missing-file-warning
-                          tags-file-name
-                          register-alist)))))
+      ;;     ;; save a bunch of variables to the desktop file
+      ;;     ;; for lists specify the len of the maximal saved data also
+      ;;     (setq desktop-globals-to-save
+      ;;           (append '((extended-command-history . 30)
+      ;;                     (file-name-history        . 100)
+      ;;                     (grep-history             . 30)
+      ;;                     (compile-history          . 30)
+      ;;                     (minibuffer-history       . 50)
+      ;;                     (query-replace-history    . 60)
+      ;;                     (read-expression-history  . 60)
+      ;;                     (regexp-history           . 60)
+      ;;                     (regexp-search-ring       . 20)
+      ;;                     (search-ring              . 20)
+      ;;                     (comint-input-ring        . 50)
+      ;;                     (shell-command-history    . 50)
+      ;;                     desktop-missing-file-warning
+      ;;                     tags-file-name
+      ;;                     register-alist)))))
 
-      ;; some custom shell commands
+      ;; ;; some custom shell commands
+      ;; ;; (define-key global-map (kbd "C-: c q") (lambda ()
+      ;; ;
+                                            ;                                          (interactive)
+      ;;                                          (setq shell-file-name "zsh")
+      ;;                                          (setq shell-command-switch "-ic")
+      ;;                                          (shell-command "executeSSHAgent")))
+
       (define-key global-map (kbd "C-: c q") (lambda ()
                                                (interactive)
-                                               (setq shell-file-name "zsh")
-                                               (setq shell-command-switch "-ic")
-                                               (shell-command "a_cwaccesstoken")))
-      ;; set zerodark theme
-      (load-theme 'doom-vibrant t)
+                                               (shell-command "executeSSHAgent")))
 
+
+      ;; set zerodark theme
+      (load-theme 'doom-meltbus t)
+
+      (keychain-refresh-environment)
       ;; add exec path values of terminal on emacs
       ;; and set the default behaviour to right meta key
       ;; this is just for mac os
@@ -740,7 +763,7 @@
         :ensure t
         ;; Replace bindings. Lazily loaded due by `use-package'.
         :bind (;; C-c bindings (mode-specific-map)
-               ("C-c h" . consult-history)
+               ;("C-c h" . consult-history)
                ("C-c m" . consult-mode-command)
                ("C-c k" . consult-kmacro)
                ;; C-x bindings (ctl-x-map)
@@ -779,16 +802,16 @@
                ("M-s k" . consult-keep-lines)
                ("M-s u" . consult-focus-lines)
                ;; Isearch integration
-               ("M-s e" . consult-isearch-history)
+               ;("M-s e" . consult-isearch-history)
                :map isearch-mode-map
-               ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
-               ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+               ;("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+               ;("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
                ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
-               ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+               ("M-s L" . consult-line-multi))            ;; needed by consult-line to detect isearch
                ;; Minibuffer history
-               :map minibuffer-local-map
-               ("M-s" . consult-history)                 ;; orig. next-matching-history-element
-               ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+               ;;:map minibuffer-local-map
+               ;;("M-s" . consult-history))                 ;; orig. next-matching-history-element
+                               ;; orig. previous-matching-history-element
 
         ;; Enable automatic preview at point in the *Completions* buffer. This is
         ;; relevant when you use the default completion UI.
@@ -967,7 +990,11 @@
         (eval-after-load 'css-mode
           '(add-hook 'css-mode-hook
                      (lambda ()
-                       (add-hook 'before-save-hook 'web-beautify-css-buffer t t)))))
+                       (add-hook 'before-save-hook 'web-beautify-css-buffer t t))))
+        (eval-after-load 'web-mode
+          '(add-hook 'web-mode-hook
+                     (lambda ()
+                       (add-hook 'before-save-hook 'lsp-eslint-apply-all-fixes t t)))))
 
       ;; workaround when in Mac OS to show dired mode sorted with dirs first
       (require 'ls-lisp)
