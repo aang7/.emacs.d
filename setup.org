@@ -547,10 +547,10 @@
 
       ;; minted for listings in export code docuements highlighting
       (setq org-latex-listings 'minted
-            org-latex-packages-alist '(("" "minted"))
-            org-latex-pdf-process
-            '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
-              "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+	    org-latex-packages-alist '(("" "minted"))
+	    org-latex-pdf-process
+	    '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
+	      "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 
       ;; python django
       ;;  (add-hook 'python-mode-hook 'anaconda-mode)
@@ -563,14 +563,14 @@
 
       ;; ;; auto indent between {}, [], and () when pressing return in-between.
       (defun indent-between-pair (&rest _ignored)
-        (newline)
-        (indent-according-to-mode)
-        (forward-line -1)
-        (indent-according-to-mode))
+	(newline)
+	(indent-according-to-mode)
+	(forward-line -1)
+	(indent-according-to-mode))
 
-      (sp-local-pair 'prog-mode "{" nil :post-handlers '((indent-between-pair "RET")))
-      (sp-local-pair 'prog-mode "[" nil :post-handlers '((indent-between-pair "RET")))
-      (sp-local-pair 'prog-mode "(" nil :post-handlers '((indent-between-pair "RET")))
+      ;;(sp-local-pair 'prog-mode "{" nil :post-handlers '((indent-between-pair "RET")))
+      ;;(sp-local-pair 'prog-mode "[" nil :post-handlers '((indent-between-pair "RET")))
+      ;;(sp-local-pair 'prog-mode "(" nil :post-handlers '((indent-between-pair "RET")))
 
 
       ;; set monaco font even in org mode.
@@ -589,13 +589,13 @@
       ;; org mode
       ;; Improve org mode looks
       (setq org-startup-indented t
-            org-pretty-entities t
-            org-hide-emphasis-markers t
-            org-startup-with-inline-images t
-            org-image-actual-width '(300))
+	    org-pretty-entities t
+	    org-hide-emphasis-markers t
+	    org-startup-with-inline-images t
+	    org-image-actual-width '(300))
 
       (setq org-todo-keywords
-            '((sequence "TODO" "FEEDBACK" "VERIFY" "INPROGRESS" "DEPENDENT" "|" "PAUSED" "DONE" "BLOCKED" "CANCELED")))
+	    '((sequence "TODO" "FEEDBACK" "VERIFY" "INPROGRESS" "DEPENDENT" "|" "PAUSED" "DONE" "BLOCKED" "CANCELED")))
 
       ;; go-translate
       ;; helps language translation
@@ -603,10 +603,10 @@
 
       (setq gts-translate-list '(("en" "es") ("es" "en")))
       (setq gts-default-translator
-            (gts-translator
-             :picker (gts-prompt-picker)
-             :engines (list (gts-google-engine))
-             :render (gts-buffer-render)))
+	    (gts-translator
+	     :picker (gts-prompt-picker)
+	     :engines (list (gts-google-engine))
+	     :render (gts-buffer-render)))
       (global-set-key (kbd "C-: t") 'gts-do-translate)
 
       ;; undo-tree customs
@@ -644,62 +644,62 @@
       ;; ;; some custom shell commands
       ;; ;; (define-key global-map (kbd "C-: c q") (lambda ()
       ;; ;
-                                            ;                                          (interactive)
+					    ;                                          (interactive)
       ;;                                          (setq shell-file-name "zsh")
       ;;                                          (setq shell-command-switch "-ic")
       ;;                                          (shell-command "executeSSHAgent")))
 
       (define-key global-map (kbd "C-: c q") (lambda ()
-                                               (interactive)
-                                               (shell-command "executeSSHAgent")))
+					       (interactive)
+					       (shell-command "executeSSHAgent")))
 
 
       ;; set zerodark theme
-      (load-theme 'doom-meltbus t)
+      (load-theme 'doom-old-hope t)
 
       (keychain-refresh-environment)
       ;; add exec path values of terminal on emacs
       ;; and set the default behaviour to right meta key
       ;; this is just for mac os
       (when (memq window-system '(mac ns x))
-        (exec-path-from-shell-initialize)
-        (setq ns-alternate-modifier 'meta)
-        (setq ns-right-alternate-modifier 'none))
+	(exec-path-from-shell-initialize)
+	(setq ns-alternate-modifier 'meta)
+	(setq ns-right-alternate-modifier 'none))
 
       ;; give color to compilation output buffers
       (add-hook 'compilation-filter-hook
-                (lambda ()
-                  (ansi-color-apply-on-region compilation-filter-start (point))))
+		(lambda ()
+		  (ansi-color-apply-on-region compilation-filter-start (point))))
 
       ;; some custom defuns
       (defun timestamp ()
-        (interactive)
-        (format-time-string "%d-%m-%Y %H:%M:%S"))
+	(interactive)
+	(format-time-string "%d-%m-%Y %H:%M:%S"))
 
       (defun my-org-timer-hook ()
-        (message "My timer done %s" (propertize (format "%s" (timestamp)) 'face '(:foreground "green")))
-        (add-to-list 'display-buffer-alist '("*Async Shell Command*" display-buffer-no-window (nil)))
-        (async-shell-command
-         "afplay ~/Downloads/mixkit-falling-game-over-1942.wav && say timer done"))
+	(message "My timer done %s" (propertize (format "%s" (timestamp)) 'face '(:foreground "green")))
+	(add-to-list 'display-buffer-alist '("*Async Shell Command*" display-buffer-no-window (nil)))
+	(async-shell-command
+	 "afplay ~/Downloads/mixkit-falling-game-over-1942.wav && say timer done"))
 
       (add-hook 'org-timer-done-hook 'my-org-timer-hook)
 
       ;; blamer - for see blame who made the code - vscode gitlens inspired
       (use-package blamer
-        :ensure t
-        :defer 20
-        :custom
-        (blamer-idle-time 0.3)
-        (blamer-min-offset 70)
-        :custom-face
-        (blamer-face ((t :foreground "#7a88cf"
-                         :background nil
-                         :height 140
-                         :italic t)))
-        :config
-        (global-blamer-mode -1)
-        :bind
-        (("s-i" . blamer-show-commit-info)))
+	:ensure t
+	:defer 20
+	:custom
+	(blamer-idle-time 0.3)
+	(blamer-min-offset 70)
+	:custom-face
+	(blamer-face ((t :foreground "#7a88cf"
+			 :background nil
+			 :height 140
+			 :italic t)))
+	:config
+	(global-blamer-mode -1)
+	:bind
+	(("s-i" . blamer-show-commit-info)))
 
       ;; helm-ag
       ;; (setq helm-ag-insert-at-point 'symbol)
@@ -707,169 +707,169 @@
       ;; experimenting stuff
       ;; Enable vertico
       (use-package vertico
-        :ensure t
-        :init
-        (vertico-mode)
+	:ensure t
+	:init
+	(vertico-mode)
 
-        ;; Grow and shrink the Vertico minibuffer
-        (setq vertico-resize t)
-        ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
-        (setq vertico-cycle t))
+	;; Grow and shrink the Vertico minibuffer
+	(setq vertico-resize t)
+	;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+	(setq vertico-cycle t))
 
       ;; A few more useful configurations...
       (use-package emacs
-        :init
-        ;; Add prompt indicator to `completing-read-multiple'.
-        ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
-        (defun crm-indicator (args)
-          (cons (format "[CRM%s] %s"
-                        (replace-regexp-in-string
-                         "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
-                         crm-separator)
-                        (car args))
-                (cdr args)))
-        (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+	:init
+	;; Add prompt indicator to `completing-read-multiple'.
+	;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+	(defun crm-indicator (args)
+	  (cons (format "[CRM%s] %s"
+			(replace-regexp-in-string
+			 "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+			 crm-separator)
+			(car args))
+		(cdr args)))
+	(advice-add #'completing-read-multiple :filter-args #'crm-indicator)
 
-        ;; Do not allow the cursor in the minibuffer prompt
-        (setq minibuffer-prompt-properties
-              '(read-only t cursor-intangible t face minibuffer-prompt))
-        (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+	;; Do not allow the cursor in the minibuffer prompt
+	(setq minibuffer-prompt-properties
+	      '(read-only t cursor-intangible t face minibuffer-prompt))
+	(add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
 
-        ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
-        ;; Vertico commands are hidden in normal buffers.
-        ;; (setq read-extended-command-predicate
-        ;;       #'command-completion-default-include-p)
+	;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+	;; Vertico commands are hidden in normal buffers.
+	;; (setq read-extended-command-predicate
+	;;       #'command-completion-default-include-p)
 
-        ;; Enable recursive minibuffers
-        (setq enable-recursive-minibuffers t))
+	;; Enable recursive minibuffers
+	(setq enable-recursive-minibuffers t))
 
       ;; Optionally use the `orderless' completion style.
       (use-package orderless
-        :ensure t
-        :init
-        ;; Configure a custom style dispatcher (see the Consult wiki)
-        ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-        ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-        (setq completion-styles '(orderless basic)
-              completion-category-defaults nil
-              completion-category-overrides '((file (styles partial-completion)))))
+	:ensure t
+	:init
+	;; Configure a custom style dispatcher (see the Consult wiki)
+	;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+	;;       orderless-component-separator #'orderless-escapable-split-on-space)
+	(setq completion-styles '(orderless basic)
+	      completion-category-defaults nil
+	      completion-category-overrides '((file (styles partial-completion)))))
 
       (use-package marginalia
-        :ensure t
-        :init
-        (marginalia-mode))
+	:ensure t
+	:init
+	(marginalia-mode))
 
       (use-package consult
-        :ensure t
-        ;; Replace bindings. Lazily loaded due by `use-package'.
-        :bind (;; C-c bindings (mode-specific-map)
-               ;("C-c h" . consult-history)
-               ("C-c m" . consult-mode-command)
-               ("C-c k" . consult-kmacro)
-               ;; C-x bindings (ctl-x-map)
-               ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-               ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-               ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-               ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-               ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-               ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
-               ;; Custom M-# bindings for fast register access
-               ("M-#" . consult-register-load)
-               ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-               ("C-M-#" . consult-register)
-               ;; Other custom bindings
-               ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-               ("<help> a" . consult-apropos)            ;; orig. apropos-command
-               ;; M-g bindings (goto-map)
-               ("M-g e" . consult-compile-error)
-               ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-               ("M-g g" . consult-goto-line)             ;; orig. goto-line
-               ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-               ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-               ("M-g m" . consult-mark)
-               ("M-g k" . consult-global-mark)
-               ("M-g i" . consult-imenu)
-               ("M-g I" . consult-imenu-multi)
-               ;; M-s bindings (search-map)
-               ("M-s d" . consult-find)
-               ("M-s D" . consult-locate)
-               ("M-s g" . consult-grep)
-               ("M-s G" . consult-git-grep)
-               ("M-s r" . consult-ripgrep)
-               ("M-s l" . consult-line)
-               ("M-s L" . consult-line-multi)
-               ("M-s m" . consult-multi-occur)
-               ("M-s k" . consult-keep-lines)
-               ("M-s u" . consult-focus-lines)
-               ;; Isearch integration
-               ;("M-s e" . consult-isearch-history)
-               :map isearch-mode-map
-               ;("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
-               ;("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
-               ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
-               ("M-s L" . consult-line-multi))            ;; needed by consult-line to detect isearch
-               ;; Minibuffer history
-               ;;:map minibuffer-local-map
-               ;;("M-s" . consult-history))                 ;; orig. next-matching-history-element
-                               ;; orig. previous-matching-history-element
+	:ensure t
+	;; Replace bindings. Lazily loaded due by `use-package'.
+	:bind (;; C-c bindings (mode-specific-map)
+	       ;("C-c h" . consult-history)
+	       ("C-c m" . consult-mode-command)
+	       ("C-c k" . consult-kmacro)
+	       ;; C-x bindings (ctl-x-map)
+	       ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+	       ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+	       ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+	       ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+	       ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+	       ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+	       ;; Custom M-# bindings for fast register access
+	       ("M-#" . consult-register-load)
+	       ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+	       ("C-M-#" . consult-register)
+	       ;; Other custom bindings
+	       ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+	       ("<help> a" . consult-apropos)            ;; orig. apropos-command
+	       ;; M-g bindings (goto-map)
+	       ("M-g e" . consult-compile-error)
+	       ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+	       ("M-g g" . consult-goto-line)             ;; orig. goto-line
+	       ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+	       ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+	       ("M-g m" . consult-mark)
+	       ("M-g k" . consult-global-mark)
+	       ("M-g i" . consult-imenu)
+	       ("M-g I" . consult-imenu-multi)
+	       ;; M-s bindings (search-map)
+	       ("M-s d" . consult-find)
+	       ("M-s D" . consult-locate)
+	       ("M-s g" . consult-grep)
+	       ("M-s G" . consult-git-grep)
+	       ("M-s r" . consult-ripgrep)
+	       ("M-s l" . consult-line)
+	       ("M-s L" . consult-line-multi)
+	       ("M-s m" . consult-multi-occur)
+	       ("M-s k" . consult-keep-lines)
+	       ("M-s u" . consult-focus-lines)
+	       ;; Isearch integration
+	       ;("M-s e" . consult-isearch-history)
+	       :map isearch-mode-map
+	       ;("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+	       ;("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+	       ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+	       ("M-s L" . consult-line-multi))            ;; needed by consult-line to detect isearch
+	       ;; Minibuffer history
+	       ;;:map minibuffer-local-map
+	       ;;("M-s" . consult-history))                 ;; orig. next-matching-history-element
+			       ;; orig. previous-matching-history-element
 
-        ;; Enable automatic preview at point in the *Completions* buffer. This is
-        ;; relevant when you use the default completion UI.
-        :hook (completion-list-mode . consult-preview-at-point-mode)
+	;; Enable automatic preview at point in the *Completions* buffer. This is
+	;; relevant when you use the default completion UI.
+	:hook (completion-list-mode . consult-preview-at-point-mode)
 
-        ;; The :init configuration is always executed (Not lazy)
-        :init
+	;; The :init configuration is always executed (Not lazy)
+	:init
 
-        ;; Optionally configure the register formatting. This improves the register
-        ;; preview for `consult-register', `consult-register-load',
-        ;; `consult-register-store' and the Emacs built-ins.
-        (setq register-preview-delay 0.5
-              register-preview-function #'consult-register-format)
+	;; Optionally configure the register formatting. This improves the register
+	;; preview for `consult-register', `consult-register-load',
+	;; `consult-register-store' and the Emacs built-ins.
+	(setq register-preview-delay 0.5
+	      register-preview-function #'consult-register-format)
 
-        ;; Optionally tweak the register preview window.
-        ;; This adds thin lines, sorting and hides the mode line of the window.
-        (advice-add #'register-preview :override #'consult-register-window)
+	;; Optionally tweak the register preview window.
+	;; This adds thin lines, sorting and hides the mode line of the window.
+	(advice-add #'register-preview :override #'consult-register-window)
 
-        ;; Use Consult to select xref locations with preview
-        (setq xref-show-xrefs-function #'consult-xref
-              xref-show-definitions-function #'consult-xref)
+	;; Use Consult to select xref locations with preview
+	(setq xref-show-xrefs-function #'consult-xref
+	      xref-show-definitions-function #'consult-xref)
 
-        ;; Configure other variables and modes in the :config section,
-        ;; after lazily loading the package.
-        :config
+	;; Configure other variables and modes in the :config section,
+	;; after lazily loading the package.
+	:config
 
-        ;; Optionally configure preview. The default value
-        ;; is 'any, such that any key triggers the preview.
-        ;; (setq consult-preview-key 'any)
-        ;; (setq consult-preview-key (kbd "M-."))
-        ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
-        ;; For some commands and buffer sources it is useful to configure the
-        ;; :preview-key on a per-command basis using the `consult-customize' macro.
-        (consult-customize
-         consult-theme
-         :preview-key '(:debounce 0.2 any)
-         consult-ripgrep consult-git-grep consult-grep
-         consult-bookmark consult-recent-file consult-xref
-         consult--source-bookmark consult--source-recent-file
-         consult--source-project-recent-file
-         :preview-key (kbd "M-."))
+	;; Optionally configure preview. The default value
+	;; is 'any, such that any key triggers the preview.
+	;; (setq consult-preview-key 'any)
+	;; (setq consult-preview-key (kbd "M-."))
+	;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+	;; For some commands and buffer sources it is useful to configure the
+	;; :preview-key on a per-command basis using the `consult-customize' macro.
+	(consult-customize
+	 consult-theme
+	 :preview-key '(:debounce 0.2 any)
+	 consult-ripgrep consult-git-grep consult-grep
+	 consult-bookmark consult-recent-file consult-xref
+	 consult--source-bookmark consult--source-recent-file
+	 consult--source-project-recent-file
+	 :preview-key (kbd "M-."))
 
-        ;; Optionally configure the narrowing key.
-        ;; Both < and C-+ work reasonably well.
-        (setq consult-narrow-key "<") ;; (kbd "C-+")
+	;; Optionally configure the narrowing key.
+	;; Both < and C-+ work reasonably well.
+	(setq consult-narrow-key "<") ;; (kbd "C-+")
 
-        ;; Optionally make narrowing help available in the minibuffer.
-        ;; You may want to use `embark-prefix-help-command' or which-key instead.
-        ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+	;; Optionally make narrowing help available in the minibuffer.
+	;; You may want to use `embark-prefix-help-command' or which-key instead.
+	;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
 
-        ;; By default `consult-project-function' uses `project-root' from project.el.
-        ;; Optionally configure a different project root function.
-        ;; There are multiple reasonable alternatives to chose from.
+	;; By default `consult-project-function' uses `project-root' from project.el.
+	;; Optionally configure a different project root function.
+	;; There are multiple reasonable alternatives to chose from.
       ;;;; 1. project.el (the default)
-        ;; (setq consult-project-function #'consult--default-project--function)
+	;; (setq consult-project-function #'consult--default-project--function)
       ;;;; 2. projectile.el (projectile-project-root)
-        (autoload 'projectile-project-root "projectile")
-        (setq consult-project-function (lambda (_) (projectile-project-root))))
+	(autoload 'projectile-project-root "projectile")
+	(setq consult-project-function (lambda (_) (projectile-project-root))))
 
       ;; winner-mode
       (winner-mode t)
@@ -877,23 +877,23 @@
       ;; custom fix for having symbol-at-point support with consult-ag
       (require 'thingatpt)
       (defun consult-ag--with-symbol ()
-        (interactive)
-        (consult-ag nil (thing-at-point 'symbol)))
+	(interactive)
+	(consult-ag nil (thing-at-point 'symbol)))
 
       ;; doom mode line
       (use-package doom-modeline
-        :ensure t
-        :config
-        (doom-modeline-mode 1)
-        (setq doom-modeline-height 5)
-        (set-face-attribute 'mode-line nil :height 130)
-        (set-face-attribute 'mode-line-inactive nil :height 120)
-        (display-battery-mode +1))
+	:ensure t
+	:config
+	(doom-modeline-mode 1)
+	(setq doom-modeline-height 5)
+	(set-face-attribute 'mode-line nil :height 130)
+	(set-face-attribute 'mode-line-inactive nil :height 120)
+	(display-battery-mode +1))
 
       ;; hide details in dired mode by default
       (add-hook 'dired-mode-hook
-                (lambda ()
-                  (dired-hide-details-mode)))
+		(lambda ()
+		  (dired-hide-details-mode)))
       ;; font size
       (set-face-attribute 'default nil :height 165)
       ;; move line where I mean
@@ -902,52 +902,52 @@
 
       ;; org-present config
       (defun my/org-present-start ()
-        ;; tweak font sizes
-        (setq-local face-remapping-alist '((default (:height 1.5) variable-pitch)
-                                           (header-line (:height 4.0) variable-pitch)
-                                           (org-document-title (:height 1.75) org-document-title)
-                                           (org-code (:height 1.55) org-code)
-                                           (org-verbatim (:height 1.55) org-verbatim)
-                                           (org-block (:height 1.25) org-block)
-                                           (org-block-begin-line (:height 0.7) org-block)))
+	;; tweak font sizes
+	(setq-local face-remapping-alist '((default (:height 1.5) variable-pitch)
+					   (header-line (:height 4.0) variable-pitch)
+					   (org-document-title (:height 1.75) org-document-title)
+					   (org-code (:height 1.55) org-code)
+					   (org-verbatim (:height 1.55) org-verbatim)
+					   (org-block (:height 1.25) org-block)
+					   (org-block-begin-line (:height 0.7) org-block)))
 
-        ;; Set a blank header line string to create blank space at the top
-        (setq header-line-format " ")
+	;; Set a blank header line string to create blank space at the top
+	(setq header-line-format " ")
 
-        ;; Display inline images automatically
-        (org-display-inline-images)
+	;; Display inline images automatically
+	(org-display-inline-images)
 
-        ;; Center the presentation and wrap lines
-        ;; (visual-fill-column-mode 1)
-        ;; (visual-line-mode 1)
-        (olivetti-mode 1)
-        )
+	;; Center the presentation and wrap lines
+	;; (visual-fill-column-mode 1)
+	;; (visual-line-mode 1)
+	(olivetti-mode 1)
+	)
 
       (defun my/org-present-end ()
-        ;; Reset font customizations
-        (setq-local face-remapping-alist '((default variable-pitch default)))
+	;; Reset font customizations
+	(setq-local face-remapping-alist '((default variable-pitch default)))
 
-        ;; Clear the header line string so that it isn't displayed
-        (setq header-line-format nil)
+	;; Clear the header line string so that it isn't displayed
+	(setq header-line-format nil)
 
-        ;; Stop displaying inline images
-        (org-remove-inline-images)
+	;; Stop displaying inline images
+	(org-remove-inline-images)
 
-        ;; Stop centering the document
-        ;;(visual-fill-column-mode 0)
-        ;;(visual-line-mode 0)
-        (olivetti-mode 0)
-        )
+	;; Stop centering the document
+	;;(visual-fill-column-mode 0)
+	;;(visual-line-mode 0)
+	(olivetti-mode 0)
+	)
 
       (defun my/org-present-prepare-slide (buffer-name heading)
-        ;; Show only top-level headlines
-        (org-overview)
+	;; Show only top-level headlines
+	(org-overview)
 
-        ;; Unfold the current entry
-        (org-show-entry)
+	;; Unfold the current entry
+	(org-show-entry)
 
-        ;; Show only direct subheadings of the slide but don't expand them
-        (org-show-children))
+	;; Show only direct subheadings of the slide but don't expand them
+	(org-show-children))
 
       ;; Register hooks with org-present
       (add-hook 'org-present-mode-hook 'my/org-present-start)
@@ -963,43 +963,45 @@
 
       ;; web beautify
       (use-package web-beautify
-        :ensure t
-        :config
-        (defun verify-js-beautify-installation ()
-          "check if node package js-beautify is installed
+	:ensure t
+	:config
+	(defun verify-js-beautify-installation ()
+	  "check if node package js-beautify is installed
        if not then, try to install it"
-          (defvar is-installed (shell-command "npm list -g js-beautify"))
-          (defconst SUCCESS_CODE 0)
-          (if (not (eq is-installed SUCCESS_CODE))
-              (progn
-                (print "'js-beautify' is not installed. Trying to install it using npm....")
-                (if (eq (shell-command "npm -g install js-beautify") SUCCESS_CODE)
-                    (print "'js-beautify' succesfully installed.")
-                  (print "Error: `js-beautify' could not be installed.")))))
-        (verify-js-beautify-installation)
-        (eval-after-load 'js2-mode
-          '(add-hook 'js2-mode-hook
-                     (lambda ()
-                       (add-hook 'before-save-hook 'web-beautify-js-buffer t t))))
+	  (defvar is-installed (shell-command "npm list -g js-beautify"))
+	  (defconst SUCCESS_CODE 0)
+	  (if (not (eq is-installed SUCCESS_CODE))
+	      (progn
+		(print "'js-beautify' is not installed. Trying to install it using npm....")
+		(if (eq (shell-command "npm -g install js-beautify") SUCCESS_CODE)
+		    (print "'js-beautify' succesfully installed.")
+		  (print "Error: `js-beautify' could not be installed.")))))
+	(verify-js-beautify-installation)
+	(eval-after-load 'js2-mode
+	  '(add-hook 'js2-mode-hook
+		     (lambda ()
+		       (add-hook 'before-save-hook 'web-beautify-js-buffer t t))))
 
-        (eval-after-load 'sgml-mode
-          '(add-hook 'html-mode-hook
-                     (lambda ()
-                       (add-hook 'before-save-hook 'web-beautify-html-buffer t t))))
+	(eval-after-load 'sgml-mode
+	  '(add-hook 'html-mode-hook
+		     (lambda ()
+		       (add-hook 'before-save-hook 'web-beautify-html-buffer t t))))
 
-        (eval-after-load 'css-mode
-          '(add-hook 'css-mode-hook
-                     (lambda ()
-                       (add-hook 'before-save-hook 'web-beautify-css-buffer t t))))
-        (eval-after-load 'web-mode
-          '(add-hook 'web-mode-hook
-                     (lambda ()
-                       (add-hook 'before-save-hook 'lsp-eslint-apply-all-fixes t t)))))
+	(eval-after-load 'css-mode
+	  '(add-hook 'css-mode-hook
+		     (lambda ()
+		       (add-hook 'before-save-hook 'web-beautify-css-buffer t t))))
+	(eval-after-load 'web-mode
+	  '(add-hook 'web-mode-hook
+		     (lambda ()
+		       (add-hook 'before-save-hook 'lsp-eslint-apply-all-fixes t t)))))
 
       ;; workaround when in Mac OS to show dired mode sorted with dirs first
       (require 'ls-lisp)
       (setq ls-lisp-dirs-first t)
-      (setq ls-lisp-use-insert-directory-program nil))
+      (setq ls-lisp-use-insert-directory-program nil)
+
+      (pixel-scroll-precision-mode t))
 
 
 
