@@ -289,8 +289,7 @@
     ;; (require 'smartparens-config)
     ;; (smartparens-global-mode nil)
 
-    ;; (ad
-     d-hook 'text-mode-hook
+    (add-hook 'text-mode-hook
               (lambda ()
                 (variable-pitch-mode 1)))
 
@@ -443,7 +442,7 @@
 
     ;; apply transparency to emacs
     (add-to-list 'default-frame-alist '(alpha . (97 . 90)))
-    (set-frame-parameter nil 'alpha '(90 . 90))
+    (set-frame-parameter nil 'alpha '(85 . 85))
 
     ;; (set-frame-parameter nil 'alpha-background 75) ; For current frame
     ;; (add-to-list 'default-frame-alist '(alpha-background . 75)) ; For all new frames henceforth
