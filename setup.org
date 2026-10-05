@@ -2,6 +2,21 @@
 #+STARTUP: overview
 #+PROPERTY: header-args:emacs-lisp :comments yes :results silent :lexical t
 
+* Pre-requisites
+These are some of the programs I had to install to get some of the packages utilities working as expected.
+
+#+BEGIN_SRC sh
+  # for fast searches across a project
+  brew install ripgrep fd 
+  brew install libgccjit tree-sitter gnutls librsvg
+  brew install cmake libvterm
+  # for emacs-plus install in macos
+  brew update
+  brew trust d12frosted/emacs-plus
+  brew tap d12frosted/emacs-plus
+  brew install --cask emacs-plus-app
+#+END_SRC
+
 * Header Cookie for Lexical Binding
 #+BEGIN_SRC emacs-lisp
 ;; -*- lexical-binding: t; -*-
@@ -201,32 +216,22 @@ With another prefix argument, insert an absolute path."
   :ensure t
   :defer nil
   :config
-  ;; oxlint (--format=unix) prints: file:line:col: message [Warning/rule]
-  ;; and for syntax errors: file:line:col: message [Error] (no rule).
-  (defun flycheck-oxlint--parse (output checker _buffer)
-    "Parse oxlint --format=unix OUTPUT into Flycheck errors."
-    (let (errors)
-      (dolist (line (split-string output "\n" t))
-        (when (string-match
-               "\\`[^:\n]+:\\([0-9]+\\):\\([0-9]+\\): \\(.*\\) \\[\\(Warning\\|Error\\)\\(?:/\\([^]]+\\)\\)?\\]\\'"
-               line)
-          (push (flycheck-error-new-at
-                 (string-to-number (match-string 1 line))
-                 (string-to-number (match-string 2 line))
-                 (if (string= "Error" (match-string 4 line)) 'error 'warning)
-                 (match-string 3 line)
-                 :id (match-string 5 line)
-                 :checker checker)
-                errors)))
-      (nreverse errors)))
-  (flycheck-define-checker oxlint
-    "JavaScript/TypeScript linter using oxlint."
-    :command ("oxlint" "--format=unix" source-inplace)
-    :error-parser flycheck-oxlint--parse
-    :modes (js-mode js-ts-mode typescript-ts-mode tsx-ts-mode))
-  (add-to-list 'flycheck-checkers 'oxlint)
+  ;; Flycheck ships `javascript-oxlint', which consumes oxlint's checkstyle
+  ;; XML.  The previous hand-rolled `--format=unix' parser only understood
+  ;; `[Warning|Error/rule]' lines, so any oxlint exit that printed something
+  ;; else (config/type-aware errors, crashes) surfaced as
+  ;; "cannot read oxlint's output".  Prefer the built-in checker.
+  (setq flycheck-checkers
+        (cons 'javascript-oxlint
+              (delq 'javascript-oxlint flycheck-checkers)))
+  ;; oxlint also lints the <script> frontmatter of .astro files, so teach
+  ;; the checker about `astro-ts-mode'.
+  (setf (flycheck-checker-get 'javascript-oxlint 'modes)
+        (cons 'astro-ts-mode
+              (flycheck-checker-get 'javascript-oxlint 'modes)))
   (dolist (hook '(js-mode-hook js-ts-mode-hook
-                  typescript-ts-mode-hook tsx-ts-mode-hook))
+                  typescript-ts-mode-hook tsx-ts-mode-hook
+                  astro-ts-mode-hook))
     (add-hook hook #'flycheck-mode)))
 
 (use-package yasnippet
@@ -244,6 +249,10 @@ With another prefix argument, insert an absolute path."
 (scroll-bar-mode -1)
 (show-paren-mode 1)
 (electric-indent-mode 1)
+;; `electric-indent-mode' normally reindents the new line on RET.  Drop the
+;; newline trigger so RET respects the surrounding formatting instead.
+;; (Typing `}' etc. still reindents, since modes add those chars separately.)
+(setq electric-indent-chars (delq ?\n electric-indent-chars))
 (column-number-mode 1)
 #+END_SRC
 
@@ -439,7 +448,15 @@ With another prefix argument, insert an absolute path."
   (global-set-key (kbd "<C-return>") #'open-line-below)
   (global-set-key (kbd "C-x DEL") #'delete-indentation)
 
-  (define-key global-map (kbd "RET") #'newline-and-indent)
+  ;; Insert a newline that keeps the current line's indentation, rather than
+  ;; letting the major mode's indent engine reformat the line.
+  (defun my/newline-and-keep-indent ()
+    "Insert a newline and keep the current line's indentation."
+    (interactive)
+    (let ((col (current-indentation)))
+      (newline)
+      (indent-to col)))
+  (define-key global-map (kbd "RET") #'my/newline-and-keep-indent)
   (define-key global-map (kbd "s-2") #'duplicate-line)
 
   (global-set-key
@@ -720,6 +737,30 @@ With another prefix argument, insert an absolute path."
 
 (setq treesit-font-lock-level 4)
 
+;; astro-ls (Volar-based) requires an explicit TypeScript SDK path and
+;; rejects a workspace that only has TypeScript 7 (which no longer ships
+;; typescript.js).  Point it at the nearest node_modules/typescript/lib
+;; that still contains typescript.js.
+(defun my/find-typescript-tsdk (start)
+  "Return nearest `node_modules/typescript/lib' under START with typescript.js."
+  (let ((dir (file-name-as-directory (expand-file-name start))) found)
+    (while (and (not found)
+                (not (equal dir (file-name-directory (directory-file-name dir)))))
+      (let ((cand (expand-file-name "node_modules/typescript/lib" dir)))
+        (when (file-exists-p (expand-file-name "typescript.js" cand))
+          (setq found cand)))
+      (setq dir (file-name-directory (directory-file-name dir))))
+    found))
+
+(defun my/astro-ls-contact (_interactive project)
+  "Eglot contact for astro-ls, injecting the project's TypeScript SDK."
+  (list "astro-ls" "--stdio"
+        :initializationOptions
+        (list :typescript
+              (list :tsdk (or (my/find-typescript-tsdk default-directory)
+                              (expand-file-name "node_modules/typescript/lib"
+                                                (project-root project)))))))
+
 ;; Eglot is built into modern Emacs versions, so do not install a
 ;; second copy from ELPA/MELPA.
 (use-package eglot
@@ -729,8 +770,15 @@ With another prefix argument, insert an absolute path."
   ((typescript-ts-mode . eglot-ensure)
    (tsx-ts-mode . eglot-ensure)
    (js-ts-mode . eglot-ensure)
-   (js-mode . eglot-ensure))
+   (js-mode . eglot-ensure)
+   (astro-ts-mode . eglot-ensure))
   :config
+  ;; eglot-typescript-preset (installed via package-selected-packages) adds
+  ;; its own eglot-server-programs entry at after-init, defaulting to
+  ;; `typescript-language-server'.  Since it is added after this config it
+  ;; shadows the tsgo entry below and would fail on workspaces using
+  ;; TypeScript 7 (no tsserver.js).  Disable its auto-setup.
+  (setq eglot-typescript-preset-auto-setup nil)
   ;; Use the TypeScript 7 native server (tsgo) directly.  Going through
   ;; rassumfrassum as a multiplexer kept aborting the whole session when a
   ;; server exited, so rass is not used at all.
@@ -739,7 +787,11 @@ With another prefix argument, insert an absolute path."
                   (js-ts-mode :language-id "javascript")
                   (typescript-ts-mode :language-id "typescript")
                   (tsx-ts-mode :language-id "typescriptreact"))
-                 . ("tsgo" "--lsp" "--stdio"))))
+                 . ("tsgo" "--lsp" "--stdio")))
+  ;; Astro language server (astro-ls).  Install globally with
+  ;;   bun add -g @astrojs/language-server
+  (add-to-list 'eglot-server-programs
+               (cons 'astro-ts-mode #'my/astro-ls-contact)))
 #+END_SRC
 
 * JavaScript / TypeScript Modes
@@ -747,6 +799,13 @@ With another prefix argument, insert an absolute path."
 (add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js-ts-mode))
+
+;; Astro: tree-sitter major mode; Eglot + oxlint hooks are set above.
+;; If `treesit-ready-p' for `astro' is nil, run once:
+;;   M-x astro-ts-mode-install-parsers
+(use-package astro-ts-mode
+  :ensure t
+  :mode ("\\.astro\\'" . astro-ts-mode))
 #+END_SRC
 
 * Format on Save (oxfmt)
