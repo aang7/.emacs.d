@@ -262,77 +262,81 @@ With another prefix argument, insert an absolute path."
 
 * Editing & Navigation Packages
 #+BEGIN_SRC emacs-lisp
-(use-package multiple-cursors
-  :ensure t
-  :defer nil)
+  (use-package multiple-cursors
+    :ensure t
+    :defer nil)
 
-(use-package buffer-move
-  :ensure t
-  :defer nil)
+  (use-package buffer-move
+    :ensure t
+    :defer nil)
 
-(use-package expand-region
-  :ensure t
-  :defer nil)
+  (use-package expand-region
+    :ensure t
+    :defer nil)
 
-(use-package ace-window
-  :ensure t
-  :defer nil)
+  (use-package ace-window
+    :ensure t
+    :defer nil)
 
-(use-package org-bullets
-  :ensure t
-  :defer nil)
+  (use-package org-bullets
+    :ensure t
+    :defer nil)
 
-(use-package vundo
-  :ensure t
-  :defer nil)
+  (use-package vundo
+    :ensure t
+    :defer nil)
 
-(use-package beacon
-  :ensure t
-  :defer nil
-  :config
-  (beacon-mode 0))
+  (use-package beacon
+    :ensure t
+    :defer nil
+    :config
+    (beacon-mode 0))
 
-(use-package neotree
-  :ensure t
-  :commands (neotree-toggle))
+  (use-package neotree
+    :ensure t
+    :commands (neotree-toggle))
 
-(use-package magit
-  :ensure t
-  :commands (magit-status magit-blame))
+  (use-package magit
+    :ensure t
+    :commands (magit-status magit-blame))
 
-(use-package projectile
-  :ensure t
-  :commands (projectile-mode projectile-find-file))
+  (use-package forge
+    :ensure t
+    :after magit)
 
-(use-package yaml-mode
-  :ensure t
-  :defer nil)
+  (use-package projectile
+    :ensure t
+    :commands (projectile-mode projectile-find-file))
 
-(use-package all-the-icons
-  :ensure t
-  :defer nil)
+  (use-package yaml-mode
+    :ensure t
+    :defer nil)
 
-(use-package fold-this
-  :ensure t
-  :defer nil)
+  (use-package all-the-icons
+    :ensure t
+    :defer nil)
 
-(use-package mwim
-  :ensure t
-  :defer nil)
+  (use-package fold-this
+    :ensure t
+    :defer nil)
 
-(use-package treemacs
-  :ensure t
-  :commands (treemacs))
+  (use-package mwim
+    :ensure t
+    :defer nil)
 
-(use-package swiper
-  :ensure t
-  :commands (swiper-isearch swiper-isearch-backward))
+  (use-package treemacs
+    :ensure t
+    :commands (treemacs))
 
-(use-package dired-recent
-  :ensure t
-  :defer nil
-  :config
-  (dired-recent-mode 1))
+  (use-package swiper
+    :ensure t
+    :commands (swiper-isearch swiper-isearch-backward))
+
+  (use-package dired-recent
+    :ensure t
+    :defer nil
+    :config
+    (dired-recent-mode 1))
 #+END_SRC
 
 * Theme
