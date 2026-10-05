@@ -1,29 +1,34 @@
+;; -*- lexical-binding: t; -*-
 (require 'package)
 
-;; FIX EMACS 30 MAC: Forzar parámetros de red compatibles con macOS
-(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-(setq package-check-signature nil)
+;; Configurar certificados y timeouts para el espejo de Emacs China
+;(setq gnutls-algorithm-priority "NORMAL")
+;(setq url-http-attempt-keep-alives nil)
 
-;; 1. USAR EL ESPEJO RESILIENTE DE EMACS CHINA (Clon exacto e instantáneo de GNU y MELPA)
+;; Repositorios usando el espejo oficial de Emacs China
+;; Lista de repositorios: Emacs-China (primero) + Repositorios Oficiales (respaldo)
 (setq package-archives
-      '(("gnu"   . "https://emacs-china.org/elpa/gnu/")
-        ("melpa" . "https://emacs-china.org/elpa/melpa/")))
+      '(("melpa-china" . "http://emacs-china.org/elpa/melpa/")
+        ("gnu-china"   . "http://emacs-china.org/elpa/gnu/")
+        ("melpa"       . "https://melpa.org/packages/")
+        ("gnu"         . "https://elpa.gnu.org/packages/")
+        ("nongnu"      . "https://elpa.nongnu.org/nongnu/")))
 
-;; 2. Definir tu ruta personalizada de paquetes ANTES de inicializar
+;; Definir tu ruta personalizada de paquetes
 (setq package-user-dir
       (expand-file-name "packages" user-emacs-directory))
 
-;; 3. Inicializar el sistema de paquetes con la ruta correcta
+;; Inicializar el sistema de paquetes
 (package-initialize)
 
-;; 4. FORZAR la descarga completa del índice limpio
+;; Forzar la descarga del índice si está vacío
 (unless package-archive-contents
-  (message "Emacs 30: Conectando con el espejo estable de Emacs-China...")
+  (message "Conectando con Emacs-China...")
   (package-refresh-contents))
 
-;; 5. Cargar tu configuración principal desde el archivo Org
+;; Cargar tu configuración principal desde Org
 (org-babel-load-file (expand-file-name "setup.org" user-emacs-directory))
 
-;; Permisos y tweaks nativos habituales
+;; Permisos nativos
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
