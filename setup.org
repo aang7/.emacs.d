@@ -358,6 +358,20 @@ With another prefix argument, insert an absolute path."
       :warning))))
 #+END_SRC
 
+* Mode Line
+#+BEGIN_SRC emacs-lisp
+(use-package doom-modeline
+  :ensure t
+  :hook (after-init . doom-modeline-mode)
+  :config
+  (setq doom-modeline-height 25
+        doom-modeline-bar-width 4
+        doom-modeline-buffer-file-name-style 'relative-from-project
+        doom-modeline-icon t))
+
+;; Glyphs need the "Symbols Nerd Font Mono" font once: M-x nerd-icons-install-fonts
+#+END_SRC
+
 * PDF Tools
 #+BEGIN_SRC emacs-lisp
 ;; Do not initialize pdf-tools during startup.
@@ -385,64 +399,65 @@ With another prefix argument, insert an absolute path."
 
 * Key-bindings
 #+BEGIN_SRC emacs-lisp
-(global-set-key (kbd "C-c l") #'treemacs)
-(global-set-key (kbd "C-c c") #'comment-or-uncomment-region)
-(global-set-key (kbd "C-c u") #'uncomment-region)
+  (global-set-key (kbd "s-SPC") #'set-mark-command)
+  (global-set-key (kbd "C-c l") #'treemacs)
+  (global-set-key (kbd "C-c c") #'comment-or-uncomment-region)
+  (global-set-key (kbd "C-c u") #'uncomment-region)
 
-(global-set-key (kbd "C-c m c") #'mc/edit-lines)
-(global-set-key (kbd "C->") #'mc/mark-next-like-this)
-(global-set-key (kbd "C-<") #'mc/mark-previous-like-this)
-(global-set-key (kbd "C-c C-<") #'mc/mark-all-like-this)
+  (global-set-key (kbd "C-c m c") #'mc/edit-lines)
+  (global-set-key (kbd "C->") #'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") #'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C-<") #'mc/mark-all-like-this)
 
-(global-set-key (kbd "M-l") #'downcase-word)
-(global-set-key (kbd "M-t") #'transpose-words)
+  (global-set-key (kbd "M-l") #'downcase-word)
+  (global-set-key (kbd "M-t") #'transpose-words)
 
-(global-set-key (kbd "C-ñ") #'er/expand-region)
-(global-set-key (kbd "C-?") #'er/contract-region)
-(global-set-key (kbd "M-z") #'ace-window)
+  (global-set-key (kbd "C-ñ") #'er/expand-region)
+  (global-set-key (kbd "C-?") #'er/contract-region)
+  (global-set-key (kbd "M-z") #'ace-window)
 
-(global-set-key (kbd "C-x a") #'mode-line-other-buffer)
-(global-set-key (kbd "C-c r") #'recompile)
-(global-set-key (kbd "C-x c") #'compile)
+  (global-set-key (kbd "C-x a") #'mode-line-other-buffer)
+  (global-set-key (kbd "C-c r") #'recompile)
+  (global-set-key (kbd "C-x c") #'compile)
 
-(global-set-key (kbd "<s-right>") #'windmove-right)
-(global-set-key (kbd "<s-left>") #'windmove-left)
-(global-set-key (kbd "<s-up>") #'windmove-up)
-(global-set-key (kbd "<s-down>") #'windmove-down)
+  (global-set-key (kbd "<s-right>") #'windmove-right)
+  (global-set-key (kbd "<s-left>") #'windmove-left)
+  (global-set-key (kbd "<s-up>") #'windmove-up)
+  (global-set-key (kbd "<s-down>") #'windmove-down)
 
-(global-set-key (kbd "<M-s-down>") #'buf-move-down)
-(global-set-key (kbd "<M-s-left>") #'buf-move-left)
-(global-set-key (kbd "<M-s-right>") #'buf-move-right)
-(global-set-key (kbd "<M-s-up>") #'buf-move-up)
+  (global-set-key (kbd "<M-s-down>") #'buf-move-down)
+  (global-set-key (kbd "<M-s-left>") #'buf-move-left)
+  (global-set-key (kbd "<M-s-right>") #'buf-move-right)
+  (global-set-key (kbd "<M-s-up>") #'buf-move-up)
 
-(global-set-key "\C-s" #'swiper-isearch)
-(global-set-key "\C-r" #'swiper-isearch-backward)
-(global-set-key (kbd "C-x g") #'magit-status)
-(global-set-key (kbd "C-. r") #'consult-recent-file)
+  (global-set-key "\C-s" #'swiper-isearch)
+  (global-set-key "\C-r" #'swiper-isearch-backward)
+  (global-set-key (kbd "C-x g") #'magit-status)
+  (global-set-key (kbd "C-. r") #'consult-recent-file)
 
-(global-set-key (kbd "<C-S-return>") #'open-line-above)
-(global-set-key (kbd "<C-return>") #'open-line-below)
-(global-set-key (kbd "C-x DEL") #'delete-indentation)
+  (global-set-key (kbd "<C-S-return>") #'open-line-above)
+  (global-set-key (kbd "<C-return>") #'open-line-below)
+  (global-set-key (kbd "C-x DEL") #'delete-indentation)
 
-(define-key global-map (kbd "RET") #'newline-and-indent)
-(define-key global-map (kbd "s-2") #'duplicate-line)
+  (define-key global-map (kbd "RET") #'newline-and-indent)
+  (define-key global-map (kbd "s-2") #'duplicate-line)
 
-(global-set-key
- "\C-x2"
- (lambda ()
-   (interactive)
-   (split-window-vertically)
-   (other-window 1)))
+  (global-set-key
+   "\C-x2"
+   (lambda ()
+     (interactive)
+     (split-window-vertically)
+     (other-window 1)))
 
-(global-set-key
- "\C-x3"
- (lambda ()
-   (interactive)
-   (split-window-horizontally)
-   (other-window 1)))
+  (global-set-key
+   "\C-x3"
+   (lambda ()
+     (interactive)
+     (split-window-horizontally)
+     (other-window 1)))
 
-(define-key global-map (kbd "C-a") #'mwim-beginning)
-(define-key global-map (kbd "C-e") #'mwim-end)
+  (define-key global-map (kbd "C-a") #'mwim-beginning)
+  (define-key global-map (kbd "C-e") #'mwim-end)
 #+END_SRC
 
 * UI Stuff
