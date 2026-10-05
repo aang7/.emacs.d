@@ -84,7 +84,8 @@
   (set-face-attribute 'default nil
                       :font "Monaco"
                       :height 130
-                      :weight 'normal)
+                      :weight 'medium)
+  ;;(setq ns-use-thin-smoothing t)
   ;; exec-path-from-shell rápido
   (use-package exec-path-from-shell
     :if (memq window-system '(mac ns x))

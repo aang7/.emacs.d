@@ -1,0 +1,300 @@
+#+TITLE: TypeScript/React IDE setup in Emacs
+#+SUBTITLE: What was needed, and why — a summary of the work done
+#+AUTHOR: notes
+#+STARTUP: overview
+
+* Goal
+
+Turn the existing ~/.emacs.d (Emacs 31.1 on macOS, config tangled from
+=setup.org=) into a working TypeScript / React IDE:
+
+- Intelligent, type-aware completion (members, symbols, imports).
+- Inline lint diagnostics.
+- Automatic formatting on save.
+- Stable: no session-wide crashes.
+
+The final stack deliberately has *no LSP multiplexer*. Every layer talks to
+one tool directly.
+
+* Final architecture
+
+| Layer            | Tool                        | Notes                                        |
+|------------------+-----------------------------+----------------------------------------------|
+| LSP client       | eglot (built-in)            | =eglot-ensure= on js/ts modes                |
+| LSP server       | =tsgo --lsp --stdio=        | TypeScript 7 native server, direct (no rass)  |
+| Completion UI    | corfu                       | =global-corfu-mode=, =corfu-auto=            |
+| Completion data  | eglot capf + cape           | cape backends added per-buffer               |
+| Linting          | flycheck + custom =oxlint=  | =oxlint --format=unix=                        |
+| Formatting       | =oxfmt= on =before-save-hook= | stdin/stdout, not LSP                       |
+| Syntax/parsing   | tree-sitter (=treesit-auto=) | needs the =typescript= grammar for =.ts=      |
+
+* External tools (installed outside Emacs)
+
+** =tsgo= — TypeScript 7 native language server
+
+#+begin_src shell
+bun add -g @typescript/native-preview      # provides tsgo
+tsgo --version                             # 7.0.0-dev...
+#+end_src
+
+Important: TypeScript 7 is the Go-native rewrite. It does **not** ship the
+JavaScript =lib/tsserver.js= that the classic =typescript-language-server=
+needs, so that server cannot use TS 7. =tsgo= is TS 7's own LSP server. In
+VS Code this is the "TypeScript 7 native preview" extension; in Emacs you just
+run the =tsgo= binary.
+
+** =oxlint= and =oxfmt= (lint + format)
+
+#+begin_src shell
+oxlint --version        # 1.86.0
+oxfmt  --version        # 0.71.0
+#+end_src
+
+** PATH for GUI Emacs
+
+macOS GUI Emacs does not inherit the shell PATH. =exec-path-from-shell= is
+already in the config (guarded by ~(memq window-system '(mac ns x))~), which
+makes =~/.local/bin=, =~/.bun/bin=, etc. visible so eglot/flycheck can find the
+binaries.
+
+* Emacs configuration, piece by piece
+
+Everything below lives in =setup.org= and is tangled into =setup.el= by
+=org-babel-load-file= on startup.
+
+** Completion UI: corfu
+
+Corfu is only the popup. It displays whatever
+=completion-at-point-functions= (capf) returns.
+
+#+begin_src emacs-lisp
+(use-package corfu
+  :ensure t
+  :defer nil
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.1)
+  (corfu-auto-prefix 2)
+  (corfu-cycle t)
+  :init
+  (global-corfu-mode))
+#+end_src
+
+Note: in current corfu, =corfu-auto-delay= / =corfu-auto-prefix= live in
+=corfu-auto.el= and are only defined once corfu-mode activates with
+=corfu-auto= non-nil. Setting them before that is harmless (they apply when the
+file loads).
+
+** Completion backends: cape (the buffer-local trap)
+
+=completion-at-point-functions= is a **buffer-local** special hook. Adding to
+it in a =use-package :init= runs while =*scratch*= is current, so it only
+modifies that buffer. The global default was left untouched, which is why
+"completions only showed buffer words".
+
+Fix: add the backends per-buffer, after the major mode, via mode hooks.
+
+#+begin_src emacs-lisp
+(use-package cape
+  :ensure t
+  :defer nil
+  :config
+  (defun my-cape-setup ()
+    "Add Cape completion backends to the buffer-local Capf."
+    (add-hook 'completion-at-point-functions #'cape-dabbrev nil t)
+    (add-hook 'completion-at-point-functions #'cape-file nil t))
+  (add-hook 'prog-mode-hook #'my-cape-setup)
+  (add-hook 'text-mode-hook #'my-cape-setup))
+#+end_src
+
+Verify which backends a buffer has:
+
+#+begin_src emacs-lisp
+completion-at-point-functions
+;; => (eglot-completion-at-point cape-file cape-dabbrev t)
+#+end_src
+
+** LSP: eglot talking directly to tsgo
+
+=eglot-ensure= runs on the relevant major modes; the server program maps those
+modes to =tsgo= with the right LSP =languageId=.
+
+#+begin_src emacs-lisp
+(use-package eglot
+  :ensure nil
+  :defer nil
+  :hook
+  ((typescript-ts-mode . eglot-ensure)
+   (tsx-ts-mode . eglot-ensure)
+   (js-ts-mode . eglot-ensure)
+   (js-mode . eglot-ensure))
+  :config
+  (add-to-list 'eglot-server-programs
+               '(((js-mode :language-id "javascript")
+                  (js-ts-mode :language-id "javascript")
+                  (typescript-ts-mode :language-id "typescript")
+                  (tsx-ts-mode :language-id "typescriptreact"))
+                 . ("tsgo" "--lsp" "--stdio"))))
+#+end_src
+
+=add-to-list= prepends, so this entry wins over eglot's built-in default for
+these modes.
+
+** Why rassumfrassum was removed (important lesson)
+
+An earlier iteration used [[https://github.com/joaotavora/rassumfrassum][rass]]
+as an LSP multiplexer (combining tsgo + oxlint + oxfmt into one server). It
+was abandoned for two independent reasons:
+
+1. *Preset/API incompatibility.* The =eglot-typescript-preset= v1.0.0 template
+   overrode =process_request= without returning the forwarded params:
+   #+begin_src python
+   super().process_request(method, params, server)   # return value dropped
+   #+end_src
+   rass ≤ 0.3.3 ignored the return value, but rass ≥ 0.3.4 does
+   ~if server_params: msg["params"] = ...~. So children received a malformed
+   =initialize= ("Missing params field") and never started. (Fixed locally by
+   adding =return=, but this is upstream's bug.)
+
+2. *Fatal on secondary exit.* =rassum.py:588= treats any server exiting as
+   fatal and tears everything down:
+   #+begin_src python
+   if msg is None and not shutting_down:
+       log(f"Error: Server {proc.name} died unexpectedly")
+       raise RuntimeError(f"Server {proc.name} crashed")   # rass exits 1
+   #+end_src
+   In practice this crashed on =$/streamDiagnostics= handling, taking down
+   oxlint, oxfmt, and eventually =tsgo= too.
+
+Conclusion: don't multiplex. Point eglot straight at =tsgo=; do linting and
+formatting outside LSP. This removed all crashes.
+
+** Formatting on save: oxfmt (outside LSP)
+
+=oxfmt= supports =--stdin-filepath=, so it can format the buffer via a pipe.
+The buffer is only replaced if oxfmt succeeds.
+
+#+begin_src emacs-lisp
+(defun my/oxfmt-buffer ()
+  "Format the current buffer with oxfmt, leaving it unchanged on failure."
+  (when (and buffer-file-name
+             (executable-find "oxfmt")
+             (derived-mode-p 'js-mode 'js-ts-mode
+                             'tsx-ts-mode 'typescript-ts-mode))
+    (let ((out (get-buffer-create " *oxfmt*")))
+      (with-current-buffer out (erase-buffer))
+      (let ((status (call-process-region
+                     (point-min) (point-max) "oxfmt" nil out nil
+                     "--stdin-filepath" buffer-file-name)))
+        (when (and (integerp status) (zerop status))
+          (let ((pt (point)))
+            (erase-buffer)
+            (insert-buffer-substring out)
+            (goto-char (min pt (point-max))))))
+      (kill-buffer out))))
+
+(add-hook 'before-save-hook #'my/oxfmt-buffer)
+#+end_src
+
+** Linting: flycheck with a custom oxlint checker
+
+flycheck was installed but never enabled. It now defines an =oxlint= checker
+and activates for JS/TS modes.
+
+Two non-obvious details:
+
+1. The error parser is called with **three** arguments =~(output checker
+   buffer)~ (a recent flycheck API change). With two it silently fails.
+2. =oxlint --format=unix= emits **two** shapes, so the regex must accept both:
+   - =file:line:col: message [Warning/eslint(no-unused-vars)]=
+   - =file:line:col: message [Error]=   (syntax errors, no rule name)
+
+#+begin_src emacs-lisp
+(use-package flycheck
+  :ensure t
+  :defer nil
+  :config
+  ;; oxlint (--format=unix) prints: file:line:col: message [Warning/rule]
+  ;; and for syntax errors: file:line:col: message [Error] (no rule).
+  (defun flycheck-oxlint--parse (output checker _buffer)
+    "Parse oxlint --format=unix OUTPUT into Flycheck errors."
+    (let (errors)
+      (dolist (line (split-string output "\n" t))
+        (when (string-match
+               "\\`[^:\n]+:\\([0-9]+\\):\\([0-9]+\\): \\(.*\\) \\[\\(Warning\\|Error\\)\\(?:/\\([^]]+\\)\\)?\\]\\'"
+               line)
+          (push (flycheck-error-new-at
+                 (string-to-number (match-string 1 line))
+                 (string-to-number (match-string 2 line))
+                 (if (string= "Error" (match-string 4 line)) 'error 'warning)
+                 (match-string 3 line)
+                 :id (match-string 5 line)
+                 :checker checker)
+                errors)))
+      (nreverse errors)))
+  (flycheck-define-checker oxlint
+    "JavaScript/TypeScript linter using oxlint."
+    :command ("oxlint" "--format=unix" source-inplace)
+    :error-parser flycheck-oxlint--parse
+    :modes (js-mode js-ts-mode typescript-ts-mode tsx-ts-mode))
+  (add-to-list 'flycheck-checkers 'oxlint)
+  (dolist (hook '(js-mode-hook js-ts-mode-hook
+                  typescript-ts-mode-hook tsx-ts-mode-hook))
+    (add-hook hook #'flycheck-mode)))
+#+end_src
+
+Use =source-inplace= (not =source=) so oxlint runs on a temp file in the same
+directory and can resolve the project's =tsconfig.json= / ignore files.
+
+** Tree-sitter grammars
+
+=treesit-auto= is enabled, but the =typescript= grammar was missing (only =tsx=
+was present), so opening =.ts= prompts to install it. Install once:
+
+#+begin_src emacs-lisp
+M-x treesit-install-language-grammar RET typescript
+#+end_src
+
+* Mode/file mapping
+
+#+begin_src emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js-ts-mode))
+#+end_src
+
+* Pitfalls encountered (quick reference)
+
+- *GUI PATH*: macOS GUI Emacs lacks =~/.local/bin= / =~/.bun/bin=. Use
+  =exec-path-from-shell= (already configured) or add to =exec-path=.
+- *capf is buffer-local*: don't =add-to-list= in =:init=; add per-buffer via a
+  mode hook.
+- *Over-eager =:defer nil=*: turning every =:defer t= into =nil= loads ~25
+  packages at startup. =pdf-tools= specifically segfaulted Emacs 31 on macOS
+  (=face_for_font= in =char-displayable-p=). Keep packages deferred.
+- *TypeScript 7 has no tsserver.js*: classic =typescript-language-server= can't
+  use it; use =tsgo --lsp --stdio=.
+- *Don't multiplex LSP*: rass aborts the whole session when any child exits,
+  and the =$/streamDiagnostics= path is fragile.
+- *flycheck parser arity*: =~(output checker buffer)~, three args.
+- *oxlint output*: syntax errors use =[Error]= with no =/rule=.
+
+* How to verify the setup
+
+- eglot connected: mode-line shows =eglot=; check =M-x flycheck-verify-setup=.
+- Completion backends in a TS buffer:
+  #+begin_src emacs-lisp
+  completion-at-point-functions
+  ;; => (eglot-completion-at-point cape-file cape-dabbrev t)
+  #+end_src
+- Intelligent completion: type =obj.= for a typed object and confirm the popup
+  lists the object's members.
+- Lint: run =M-x flycheck-buffer= on a file with an unused variable.
+- Format: save a messy JS/TS buffer and confirm oxfmt reformatted it.
+- rass is gone: =(featurep 'eglot-typescript-preset)= should be =nil=, and no
+  =rass= process is spawned by Emacs.
+
+* Optional cleanup
+
+- =pipx uninstall rassumfrassum= (no longer used).
+- Remove =packages/eglot-typescript-preset/= and =~/.emacs.d/eglot-typescript-preset/=.
