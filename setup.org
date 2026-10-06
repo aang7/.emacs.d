@@ -453,7 +453,9 @@ With another prefix argument, insert an absolute path."
 * Key-bindings
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "s-SPC") #'set-mark-command)
-  (global-set-key (kbd "C-c l") #'treemacs)
+  ;; Focus/jump to the treemacs pane (and back).  `treemacs-select-window'
+  ;; focuses it when visible elsewhere, unlike `treemacs' which would hide it.
+  (global-set-key (kbd "C-c l") #'treemacs-select-window)
   (global-set-key (kbd "C-c c") #'comment-or-uncomment-region)
   (global-set-key (kbd "C-c u") #'uncomment-region)
 
