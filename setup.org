@@ -301,10 +301,6 @@ With another prefix argument, insert an absolute path."
     :config
     (beacon-mode 0))
 
-  (use-package neotree
-    :ensure t
-    :commands (neotree-toggle))
-
   (use-package magit
     :ensure t
     :commands (magit-status magit-blame))
@@ -335,7 +331,25 @@ With another prefix argument, insert an absolute path."
 
   (use-package treemacs
     :ensure t
-    :commands (treemacs))
+    :commands (treemacs)
+    :custom
+    (treemacs-width 35)
+    (treemacs-show-hidden-files nil)
+    (treemacs-sorting 'alphabetic-case-insensitive-asc)
+    ;; Indentation guides: one "│ " per level.
+    (treemacs-indentation 1)
+    (treemacs-indentation-string (propertize "│ " 'face 'font-lock-comment-face))
+    ;; doom-modeline already handles the mode line.
+    (treemacs-user-mode-line-format 'none)
+    :config
+    (treemacs-hide-gitignored-files-mode 1)
+    (treemacs-follow-mode 1))
+
+  (use-package treemacs-nerd-icons
+    :ensure t
+    :after treemacs
+    :config
+    (treemacs-load-theme "nerd-icons"))
 
   (use-package swiper
     :ensure t
