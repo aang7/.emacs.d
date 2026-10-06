@@ -406,6 +406,36 @@ With another prefix argument, insert an absolute path."
   :commands (vterm vterm-other-window))
 #+END_SRC
 
+* Agent Shell (ACP agents: Claude, Codex, Gemini, Pi, ...)
+#+BEGIN_SRC emacs-lisp
+;; agent-shell talks to any ACP agent.  Install the agent CLI first, e.g.:
+;;   npm install -g pi-acp            ; this machine already has it
+;;   npm install -g @agentclientprotocol/claude-agent-acp
+;; `pi-acp' and `gemini' are on PATH here, so no extra setup is needed.
+(use-package agent-shell
+  :ensure t
+  :defer t
+  :bind (("C-c a" . agent-shell)          ; start/reuse a shell
+         ("C-c A" . agent-shell-prompt-compose))
+  :init
+  ;; Default agent for `M-x agent-shell'.  Identifiers live in
+  ;; `agent-shell-agent-configs' (e.g. 'pi, 'gemini-cli).  Set at startup
+  ;; (not :custom, which would be deferred along with the package).
+  (setq agent-shell-preferred-agent-config 'pi)
+  :config
+  ;; Keep transcripts/screenshots out of project trees (~/.emacs.d/agent-shell/).
+  ;; Comment this out if you prefer the default .agent-shell/ in each project.
+  (defun my/agent-shell-dot-subdir (subdir)
+    "Return path to store agent-shell SUBDIR under `user-emacs-directory'."
+    (let* ((cwd (string-remove-suffix "/" (agent-shell-cwd)))
+           (sanitized (replace-regexp-in-string
+                       "/" "-" (string-remove-prefix "/" cwd))))
+      (expand-file-name subdir
+                        (locate-user-emacs-file
+                         (concat "agent-shell/" sanitized)))))
+  (setopt agent-shell-dot-subdir-function #'my/agent-shell-dot-subdir))
+#+END_SRC
+
 * Key-bindings
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "s-SPC") #'set-mark-command)

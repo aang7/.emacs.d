@@ -1,0 +1,160 @@
+#+TITLE: agent-shell Guide
+#+AUTHOR: aang
+#+STARTUP: overview
+#+PROPERTY: header-args :eval never
+
+A native Emacs shell for LLM coding agents that speak ACP (Agent Client
+Protocol).  One interface, any agent: Pi, Gemini CLI, Claude Agent, Codex,
+Goose, Cursor, OpenCode, and more.
+
+Package: [[https://github.com/xenodium/agent-shell][xenodium/agent-shell]] (MELPA) — by Álvaro Ramírez.
+Internally built on =shell-maker= and =acp.el=.
+
+* Setup (already done)
+
+Installed into =~/.emacs.d/packages/= via MELPA:
+
+- =agent-shell= (plus deps =acp= and =shell-maker=)
+
+Configuration lives in the source of truth =setup.org= (section
+"Agent Shell"), from which =setup.el= is tangled at startup:
+
+#+BEGIN_SRC emacs-lisp
+(use-package agent-shell
+  :ensure t
+  :defer t
+  :bind (("C-c a" . agent-shell)          ; start/reuse a shell
+         ("C-c A" . agent-shell-prompt-compose))
+  :init
+  ;; Default agent for `M-x agent-shell'.  Identifiers live in
+  ;; `agent-shell-agent-configs' (e.g. 'pi, 'gemini-cli).
+  (setq agent-shell-preferred-agent-config 'pi)
+  :config
+  ;; Keep transcripts/screenshots out of project trees
+  ;; (~/.emacs.d/agent-shell/ instead of .agent-shell/ per project).
+  (defun my/agent-shell-dot-subdir (subdir)
+    "Return path to store agent-shell SUBDIR under `user-emacs-directory'."
+    (let* ((cwd (string-remove-suffix "/" (agent-shell-cwd)))
+           (sanitized (replace-regexp-in-string
+                       "/" "-" (string-remove-prefix "/" cwd))))
+      (expand-file-name subdir
+                        (locate-user-emacs-file
+                         (concat "agent-shell/" sanitized)))))
+  (setopt agent-shell-dot-subdir-function #'my/agent-shell-dot-subdir))
+#+END_SRC
+
+Note: the preferred agent is set in =:init= rather than =:custom= because
+=:custom= on a deferred package would only apply after the package loads.
+
+* Prerequisites
+
+Each agent needs its own ACP adapter / CLI on =PATH=.  On this machine:
+
+- =pi-acp= — already installed
+- =gemini= — already installed
+
+Others (install only what you use):
+
+#+BEGIN_SRC sh
+npm install -g pi-acp
+npm install -g @agentclientprotocol/claude-agent-acp   # Claude
+npm install -g @agentclientprotocol/codex-acp          # Codex
+# ... plus the agent's own CLI/login where required
+#+END_SRC
+
+Optional image tools:
+
+- macOS clipboard paste: =brew install pngpaste=
+- macOS screenshots: =screencapture= (preinstalled)
+
+* Using it
+
+** Starting
+
+| Command / key              | Action                                        |
+|----------------------------+-----------------------------------------------|
+| =M-x agent-shell= / =C-c a= | Start or reuse a shell; asks which agent      |
+| =C-u M-x agent-shell=       | Force a new session (multiple shells)         |
+| =M-x agent-shell-pi-start-agent=    | Start a Pi session directly           |
+| =M-x agent-shell-google-start-gemini= | Start a Gemini CLI session directly |
+| =C-c A= / =M-x agent-shell-prompt-compose= | Compose in a dedicated buffer  |
+
+** In the shell
+
+| Key              | Action                                          |
+|------------------+-------------------------------------------------|
+| =RET=             | Submit prompt                                   |
+| =M-J=             | Insert newline without submitting               |
+| =C-c C-c=         | Interrupt the running turn                      |
+| =TAB= / =S-TAB=   | Move between interactive elements               |
+| =C-c C-v=         | Set model                                       |
+| =C-c C-m=         | Set session mode                                |
+| =C-c C-t=         | Set thought (reasoning) level                   |
+| =C-<tab>=         | Cycle session mode                              |
+| =C-c C-o=         | Open the viewport                               |
+
+A prompt sent while the agent is busy is *queued* by default.  =M-RET=
+(or =C-u RET=) *steers* the running turn instead, for agents that support
+it.  The header shows the current model / mode / thought level; click a
+segment to change it.
+
+** Viewport vs. compose
+
+The shell is an append-only transcript, so both tools exist to focus on
+one thing at a time:
+
+- *Viewport* (=C-c C-o=) — read/compose *one interaction at a time* in a
+  separate =[viewport]= buffer.
+  - View mode: =r= reply, =R= quoted reply, =b= / =f= prev/next
+    interaction, =p= / =n= prev/next item, =?= help, =q= bury.
+  - Edit mode: =C-c C-c= send/queue, =C-u C-c C-c= send but keep open,
+    =C-c C-p= peek, =C-c C-k= cancel, =C-c C-h= help.
+- *Compose* (=C-c A=) — write the prompt in a dedicated buffer with full
+  Emacs editing; nothing sends until =C-c C-c=.  Keeps drafts while the
+  agent is busy.
+
+Make the viewport the default entry point:
+
+#+BEGIN_SRC emacs-lisp
+(setopt agent-shell-prefer-viewport-interaction t)
+#+END_SRC
+
+** Attachments
+
+- =M-x agent-shell-send-clipboard-image= — paste a clipboard image.
+- =M-x agent-shell-send-screenshot= — capture the screen.
+- Drag a file from =dired= / Finder onto the shell to attach as =@path=.
+
+** Adding / switching agents
+
+Change the default:
+
+#+BEGIN_SRC emacs-lisp
+(setq agent-shell-preferred-agent-config 'claude-code)  ; or 'gemini-cli, 'codex, ...
+#+END_SRC
+
+Identifiers are the =:identifier= values in =agent-shell-agent-configs=
+(22 configs ship by default).
+
+* Customization pointers
+
+- =agent-shell-*-environment= — pass env vars (use
+  =agent-shell-make-environment-variables=).
+- =agent-shell-mcp-servers= — configure MCP servers once for all agents.
+- =agent-shell-dot-subdir-function= — where per-project data is stored
+  (already redirected to =~/.emacs.d/agent-shell/=).
+- =agent-shell-command-prefix= — run agents inside Docker/devcontainers.
+- =agent-shell-mode-hook= + =agent-shell-subscribe-to= — react to events
+  (turn complete, tool calls, config changes).
+
+Full docs: package README and =C-h f agent-shell-subscribe-to=.
+
+* Housekeeping
+
+Per-project agent data now lives under =~/.emacs.d/agent-shell/=, so it
+shows up as untracked in this repo.  Consider adding to =.gitignore=:
+
+#+BEGIN_SRC text
+/agent-shell/
+/agent/
+#+END_SRC
