@@ -334,6 +334,8 @@ With another prefix argument, insert an absolute path."
     :commands (treemacs)
     :custom
     (treemacs-width 35)
+    ;; Let the pane be resized normally (not fixed at `treemacs-width').
+    (treemacs-width-is-initially-locked nil)
     (treemacs-show-hidden-files nil)
     (treemacs-sorting 'alphabetic-case-insensitive-asc)
     ;; Indentation guides: one "│ " per level.
