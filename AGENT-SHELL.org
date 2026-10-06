@@ -125,6 +125,62 @@ Make the viewport the default entry point:
 - =M-x agent-shell-send-screenshot= — capture the screen.
 - Drag a file from =dired= / Finder onto the shell to attach as =@path=.
 
+** Closing, resuming, and forking sessions
+
+Closing
+
+- Kill the shell buffer (=C-x k=) to shut down the ACP client / agent
+  process.  The transcript is already saved under
+  =~/.emacs.d/agent-shell/<project>/= and the agent keeps the session
+  server-side, so it can be resumed later.
+- =M-x agent-shell-restart= clears the conversation: kills the buffer
+  and starts a fresh session in the same project with the same agent.
+- =M-x agent-shell-reload= restarts the current session with the *same*
+  session ID (useful after changing config).
+
+Resuming
+
+- Easiest: run =C-c a= / =M-x agent-shell= again.  With the default
+  =agent-shell-session-strategy= of ='prompt=, it asks you to pick an
+  existing session for that agent/project or start a new one.
+- Make it automatic:
+  #+BEGIN_SRC emacs-lisp
+  (setq agent-shell-session-strategy 'latest)  ; or 'new, 'prompt (default)
+  #+END_SRC
+- By ID: =M-x agent-shell-resume-session= prompts for a session ID.
+  Get one with =M-x agent-shell-copy-session-id=, or set
+  =agent-shell-show-session-id= to show IDs in the header.
+- =M-x agent-shell-fork= branches the current conversation into a new
+  shell (only for agents that advertise session forking).
+- How much history is replayed on resume is controlled by
+  =agent-shell-session-restore-verbosity=:
+  - =minimal= (default) — session title only, fast and quiet.
+  - =last= — just the last prompt/response turn.
+  - =first-last= — first and last turns.
+  - =full= — replay the whole conversation.
+
+** Inserting code context
+
+- Region: =M-x agent-shell-send-region= inserts the selection as a
+  =file:line-start-line-end= link plus a short numbered preview.
+  =agent-shell-send-region-to= prompts which shell to use.
+- DWIM: =M-x agent-shell-send-dwim= sends the region, or the error at
+  point (Flycheck), or the current line, to the project's last-used
+  shell.  =C-u= starts a new shell; =C-u C-u= lets you pick one.
+- Whole files: =agent-shell-send-file= / =agent-shell-send-file-to=,
+  =agent-shell-send-current-file=, =agent-shell-send-other-file=,
+  =agent-shell-insert-file=.
+- Shell output: =agent-shell-insert-shell-command-output= runs a
+  command and inserts its output as a code block.
+- At the prompt: type =@= for file-name completion
+  (=agent-shell-completion-mode=), or drag a file from =dired= /
+  Finder, to insert an =@path= link.
+- Automatic: =C-c C-w= (the package's default binding for
+  =agent-shell=) pulls context from the source buffer according to
+  =agent-shell-context-sources= (=files=, =region=, =error=, =line=).
+- To quote the region into the *latest* prompt instead: =r=
+  (=agent-shell-quote-region=) inside the shell.
+
 ** Adding / switching agents
 
 Change the default:
