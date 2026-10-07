@@ -1,629 +1,925 @@
-#+STARTUP: overview 
-#+PROPERTY: header-args  :comments yes  :results silent
+#+TITLE: Emacs Configuration
+#+STARTUP: overview
+#+PROPERTY: header-args:emacs-lisp :comments no :results silent :lexical t
 
-* Introduction
-  This emacs configuration has been tested on /*GNU Emacs 26.3* (x86_64-pc-linux-gnu, GTK+ Version 3.22.30) of 2019-09-16/.
-  So I guess if you apply this /emacs/ configuration to be your own configuration as a basis, then it should work.
+* Pre-requisites
+These are some of the programs I had to install to get some of the packages utilities working as expected.
 
-* General tweaks
+#+BEGIN_SRC sh
+  # for fast searches across a project
+  brew install ripgrep fd 
+  brew install libgccjit tree-sitter gnutls librsvg
+  brew install cmake libvterm
+  # for emacs-plus install in macos
+  brew update
+  brew trust d12frosted/emacs-plus
+  brew tap d12frosted/emacs-plus
+  brew install --cask emacs-plus-app
+#+END_SRC
 
-  #+BEGIN_SRC emacs-lisp
-  (toggle-frame-maximized)
+* Lexical Binding
+Emacs only honors the file-local cookie on line 1 of the tangled
+=setup.el=.  Keep this the first Emacs Lisp block and leave
+=:comments no= in the file header, otherwise the tangle prepends a
+=;; [[file:...]]= comment and the cookie lands on line 2, silently
+disabling lexical binding for the whole configuration.
 
-    (setq warning-minimum-level :emergency) ;; not warning windows
-    (setq inhibit-startup-message t) ;;no more start screen buffer
+#+BEGIN_SRC emacs-lisp
+;; -*- lexical-binding: t; -*-
+#+END_SRC
 
-    ;; Setting themes folder
-    (setq theme-dir
-          (expand-file-name "themes" user-emacs-directory))
-    (if (file-directory-p theme-dir)
-        (message "[OK]: Custom themes dir: %s" theme-dir)
-      (make-directory theme-dir))
-    (add-to-list 'custom-theme-load-path theme-dir)
+* GC & Performance Optimization
+#+BEGIN_SRC emacs-lisp
+;; Keep startup GC generous, then lower it after startup.
+(setq gc-cons-threshold (* 100 1024 1024))
+(setq read-process-output-max (* 3 1024 1024))
 
-    ;; keep emacs custom-settings in a separate file
-    (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-    (if (file-exists-p custom-file)
-        (message "[OK]: Custom file %s" custom-file)
-      (write-region "" nil custom-file))
+;; Avoid font-cache compaction pauses on macOS.
+(setq inhibit-compacting-font-caches t)
 
-    (load custom-file)
+;; Keep Git available for VC/package infrastructure.
+(setq vc-handled-backends '(Git))
 
-    ;; Write backup files to own directory
-    (setq backup-directory-alist
-          `(("." . ,(expand-file-name
-                     (concat user-emacs-directory "backups")))))
+;; Avoid unnecessary case folding in auto-mode-alist.
+(setq auto-mode-case-fold nil)
 
-    ;; (message (expand-file-name "junio-theme.el" theme-dir))
-    ;; (when (file-exists-p (expand-file-name "junio-theme.el" theme-dir))
-    ;;   (message "Loading junio..")
-    ;;   (load-theme 'junio t))
+;; Reduce startup noise.
+(setq warning-minimum-level :emergency)
+(setq inhibit-startup-message t)
+#+END_SRC
 
-    (require 'saveplace)
-    (setq-default save-place t)
-    (setq save-place-file (expand-file-name ".places" user-emacs-directory))
-  #+END_SRC
+* Package Infrastructure & Safe Bootstrap
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+
+  ;; `init.el' owns `package-user-dir' and `package-archives' and already
+  ;; calls `package-initialize' before loading this file.  Calling it again
+  ;; here would reset `load-path' from a different package directory and
+  ;; trigger "Unnecessary call to `package-initialize'" at startup.
+
+  ;; Install a package only when it is actually missing.
+  ;; This avoids refreshing package archives on every startup.
+  (defun my/ensure-package (package)
+    "Install PACKAGE if it is not already installed."
+    (unless (package-installed-p package)
+      (unless package-archive-contents
+        (package-refresh-contents))
+      (condition-case err
+          (package-install package)
+        (error
+         (display-warning
+          'my-package-bootstrap
+          (format "Could not install %s: %s"
+                  package
+                  (error-message-string err))
+          :warning)))))
+
+  ;; use-package is the only package that must exist before the
+  ;; rest of this configuration can be evaluated.
+  (my/ensure-package 'use-package)
+  (require 'use-package)
+
+  ;; Packages declared below may be installed automatically when
+  ;; their use-package declaration is evaluated, but most of them
+  ;; are deferred so they do not load during startup.
+  (setq use-package-always-ensure t)
+#+END_SRC
+
+* GCMH - Garbage Collection
+#+BEGIN_SRC emacs-lisp
+(use-package gcmh
+  :ensure t
+  :defer nil
+  :custom
+  (gcmh-idle-delay 1.5)
+  (gcmh-high-cons-threshold (* 100 1024 1024))
+  :config
+  (gcmh-mode 1))
+#+END_SRC
+
+* General Tweaks
+#+BEGIN_SRC emacs-lisp
+  (setq ring-bell-function 'ignore)
+  (setq visible-bell t)
+  (set-face-attribute 'default nil
+                      :font "JetBrainsMono Nerd Font Mono"
+                      :height 140
+                      :weight 'medium)
+  ;;(setq ns-use-thin-smoothing t)
+  ;; exec-path-from-shell rápido
+  (use-package exec-path-from-shell
+    :if (memq window-system '(mac ns x))
+    :config
+    (setq exec-path-from-shell-variables '("PATH" "MANPATH"))
+    (exec-path-from-shell-initialize)
+    (setq ns-alternate-modifier 'meta)
+    (setq ns-right-alternate-modifier 'none))
+
+  ;;Theme directory.
+  (defvar my/theme-dir
+    (expand-file-name "themes" user-emacs-directory))
+
+  (unless (file-directory-p my/theme-dir)
+    (make-directory my/theme-dir t))
+
+  (add-to-list 'custom-theme-load-path my/theme-dir)
+
+  ;; Custom file.
+  (setq custom-file
+        (expand-file-name "custom.el" user-emacs-directory))
+
+  (unless (file-exists-p custom-file)
+    (with-temp-file custom-file
+      (insert ";; -*- lexical-binding: t; -*-\n")))
+
+  (load custom-file 'noerror)
+
+  ;; Backups and persistent state.
+  (setq backup-directory-alist
+        `(("." . ,(expand-file-name "backups"
+                                    user-emacs-directory))))
+
+  (require 'saveplace)
+  (setq-default save-place t)
+  (setq save-place-file
+        (expand-file-name ".places" user-emacs-directory))
+
+  (setq dired-listing-switches "-avhgl --group-directories-first")
+
+  (with-eval-after-load 'cus-edit
+    (set-face-attribute 'custom-button nil :box '(:line-width 1))
+    (set-face-attribute 'custom-button-mouse nil :box '(:line-width 1)))
+#+END_SRC
 
 * Defuns
+#+BEGIN_SRC emacs-lisp
+(defun open-line-above ()
+  "Open a new line above the current line."
+  (interactive)
+  (beginning-of-line)
+  (newline)
+  (forward-line -1)
+  (indent-for-tab-command))
 
-  Some general functions.
+(defun open-line-below ()
+  "Open a new line below the current line."
+  (interactive)
+  (end-of-line)
+  (newline)
+  (indent-for-tab-command))
 
-  #+BEGIN_SRC emacs-lisp
+(defun duplicate-line ()
+  "Duplicate the current line."
+  (interactive)
+  (beginning-of-line)
+  (set-mark-command nil)
+  (end-of-line)
+  (kill-ring-save (region-beginning) (region-end))
+  (newline)
+  (yank))
 
-  ;; idea from: https://stackoverflow.com/a/10095853/6132402
-  (defun ensure-package-installed (&rest packages)
-    "Assure every package is installed
-     Return a list of installed packages or nil for every skipped package."
-    (mapcar
-     (lambda (package)
-       ;; (package-installed-p 'evil)
-       (if (package-installed-p package)
-           nil
-         (package-install package)
-             ))
-     packages))
+(defun my-org-screenshot ()
+  "Take a screenshot into a timestamped file in the Org buffer directory."
+  (interactive)
+  (let ((filename
+         (concat
+          (make-temp-name
+           (concat
+            (file-name-nondirectory (buffer-file-name))
+            "_imgs/"
+            (format-time-string "%Y%m%d_%H%M%S_")))
+          ".png")))
+    (unless (file-exists-p (file-name-directory filename))
+      (make-directory (file-name-directory filename) t))
+    (pcase system-type
+      ('darwin
+       (shell-command (concat "pngpaste " filename)))
+      ('gnu/linux
+       (call-process "import" nil nil nil filename)))
+    (when (file-exists-p filename)
+      (insert (concat "[[file:" filename "]]"))
+      (org-display-inline-images))))
 
-  ; initializes auto-complete-c-headers and gets called for c/c++ hooks
-  ;; (defun my:ac-c-header-init ()
-  ;;   (require 'auto-complete-c-headers)
-  ;;   (add-to-list 'ac-sources 'ac-source-c-headers)
-  ;;   (add-to-list 'achead:include-directories '"/usr/include/"))
+(defun my-insert-file-name (filename &optional args)
+  "Insert FILENAME.
 
-  ;; ;; editing text defuns
-  (defun open-line-above ()
+With prefix argument `-', insert a relative path.
+With another prefix argument, insert an absolute path."
+  (interactive "*fInsert file name: \nP")
+  (cond
+   ((eq '- args)
+    (insert (file-relative-name filename)))
+   ((not (null args))
+    (insert (expand-file-name filename)))
+   (t
+    (insert filename))))
+#+END_SRC
+
+* Lightweight Package Infrastructure
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :ensure t
+  :defer nil
+  :config
+  ;; Flycheck ships `javascript-oxlint', which consumes oxlint's checkstyle
+  ;; XML.  The previous hand-rolled `--format=unix' parser only understood
+  ;; `[Warning|Error/rule]' lines, so any oxlint exit that printed something
+  ;; else (config/type-aware errors, crashes) surfaced as
+  ;; "cannot read oxlint's output".  Prefer the built-in checker.
+  (setq flycheck-checkers
+        (cons 'javascript-oxlint
+              (delq 'javascript-oxlint flycheck-checkers)))
+  ;; oxlint also lints the <script> frontmatter of .astro files, so teach
+  ;; the checker about `astro-ts-mode'.  Use the public `flycheck-add-mode'
+  ;; instead of `(setf (flycheck-checker-get ...))': that place's setter
+  ;; comes from a `gv-define-setter' that is only registered once flycheck
+  ;; loads, so the `setf' macro-expands to a call to the nonexistent
+  ;; function `(setf flycheck-checker-get)' and fails at `:config' time.
+  (flycheck-add-mode 'javascript-oxlint 'astro-ts-mode)
+  (dolist (hook '(js-mode-hook js-ts-mode-hook
+                  typescript-ts-mode-hook tsx-ts-mode-hook
+                  astro-ts-mode-hook))
+    (add-hook hook #'flycheck-mode)))
+
+(use-package yasnippet
+  :ensure t
+  :defer nil)
+
+(use-package which-key
+  :ensure t
+  :defer 1
+  :config
+  (which-key-mode 1))
+
+;; Lightweight global modes.
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+(show-paren-mode 1)
+(electric-indent-mode 1)
+;; `electric-indent-mode' normally reindents the new line on RET.  Drop the
+;; newline trigger so RET respects the surrounding formatting instead.
+;; (Typing `}' etc. still reindents, since modes add those chars separately.)
+(setq electric-indent-chars (delq ?\n electric-indent-chars))
+(column-number-mode 1)
+#+END_SRC
+
+* Recent Files
+#+BEGIN_SRC emacs-lisp
+(use-package recentf
+  :ensure nil
+  :defer 1
+  :custom
+  (recentf-max-menu-items 25)
+  (recentf-max-saved-items 50)
+  (recentf-auto-cleanup 'never)
+  :config
+  (recentf-mode 1))
+#+END_SRC
+
+* Editing & Navigation Packages
+#+BEGIN_SRC emacs-lisp
+  (use-package multiple-cursors
+    :ensure t
+    :defer nil)
+
+  (use-package buffer-move
+    :ensure t
+    :defer nil)
+
+  (use-package expand-region
+    :ensure t
+    :defer nil)
+
+  (use-package ace-window
+    :ensure t
+    :defer nil)
+
+  (use-package org-bullets
+    :ensure t
+    :defer nil)
+
+  (use-package vundo
+    :ensure t
+    :defer nil)
+
+  (use-package beacon
+    :ensure t
+    :defer nil
+    :config
+    (beacon-mode 0))
+
+  (use-package magit
+    :ensure t
+    :commands (magit-status magit-blame))
+
+  (use-package forge
+    :ensure t
+    :after magit)
+
+  (use-package projectile
+    :ensure t
+    :commands (projectile-mode projectile-find-file))
+
+  (use-package yaml-mode
+    :ensure t
+    :defer nil)
+
+  (use-package all-the-icons
+    :ensure t
+    :defer nil)
+
+  (use-package fold-this
+    :ensure t
+    :defer nil)
+
+  (use-package mwim
+    :ensure t
+    :defer nil)
+
+  (use-package treemacs
+    :ensure t
+    :commands (treemacs)
+    :custom
+    (treemacs-width 35)
+    ;; Let the pane be resized normally (not fixed at `treemacs-width').
+    (treemacs-width-is-initially-locked nil)
+    (treemacs-show-hidden-files nil)
+    (treemacs-sorting 'alphabetic-case-insensitive-asc)
+    ;; Indentation guides: one "│ " per level.
+    (treemacs-indentation 1)
+    (treemacs-indentation-string (propertize "│ " 'face 'font-lock-comment-face))
+    ;; doom-modeline already handles the mode line.
+    (treemacs-user-mode-line-format 'none)
+    :config
+    (treemacs-hide-gitignored-files-mode 1)
+    (treemacs-follow-mode 1))
+
+  (use-package treemacs-nerd-icons
+    :ensure t
+    :after treemacs
+    :config
+    (treemacs-load-theme "nerd-icons"))
+
+  (use-package swiper
+    :ensure t
+    :commands (swiper-isearch swiper-isearch-backward))
+
+  (use-package dired-recent
+    :ensure t
+    :defer nil
+    :config
+    (dired-recent-mode 1))
+#+END_SRC
+
+* Theme
+#+BEGIN_SRC emacs-lisp
+(use-package doom-themes
+  :ensure t
+  :defer nil
+  :config
+  (condition-case err
+      (progn
+        (load-theme 'doom-one t)
+        (unless (display-graphic-p)
+          (set-face-background 'default "none")))
+    (error
+     (display-warning
+      'my-theme
+      (format "Could not load doom-one: %s"
+              (error-message-string err))
+      :warning))))
+#+END_SRC
+
+* Mode Line
+#+BEGIN_SRC emacs-lisp
+(use-package doom-modeline
+  :ensure t
+  :hook (after-init . doom-modeline-mode)
+  :config
+  (setq doom-modeline-height 25
+        doom-modeline-bar-width 4
+        doom-modeline-buffer-file-name-style 'relative-from-project
+        doom-modeline-icon t))
+
+;; Glyphs need the "Symbols Nerd Font Mono" font once: M-x nerd-icons-install-fonts
+#+END_SRC
+
+* Winpulse
+#+BEGIN_SRC emacs-lisp
+;; Flash the focused window's background on focus change.
+(use-package winpulse
+  :ensure t
+  :defer nil
+  :custom
+  (winpulse-brightness 20)
+  (winpulse-duration 0.62)
+  :config
+  (winpulse-mode 1))
+#+END_SRC
+
+* PDF Tools
+#+BEGIN_SRC emacs-lisp
+;; Do not initialize pdf-tools during startup.
+(use-package pdf-tools
+  :ensure t
+  :magic ("%PDF" . pdf-view-mode)
+  :defer t
+  :config
+  (condition-case err
+      (pdf-tools-install :no-query)
+    (error
+     (display-warning
+      'pdf-tools
+      (format "pdf-tools initialization failed: %s"
+              (error-message-string err))
+      :warning))))
+#+END_SRC
+
+* VTerm
+#+BEGIN_SRC emacs-lisp
+(use-package vterm
+  :ensure t
+  :commands (vterm vterm-other-window))
+#+END_SRC
+
+* Agent Shell (ACP agents: Claude, Codex, Gemini, Pi, ...)
+#+BEGIN_SRC emacs-lisp
+;; agent-shell talks to any ACP agent.  Install the agent CLI first, e.g.:
+;;   npm install -g pi-acp            ; this machine already has it
+;;   npm install -g @agentclientprotocol/claude-agent-acp
+;; `pi-acp' and `gemini' are on PATH here, so no extra setup is needed.
+(use-package agent-shell
+  :ensure t
+  :defer t
+  :bind (("C-c a" . agent-shell)          ; start/reuse a shell
+         ("C-c A" . agent-shell-prompt-compose))
+  :init
+  ;; Default agent for `M-x agent-shell'.  Identifiers live in
+  ;; `agent-shell-agent-configs' (e.g. 'pi, 'gemini-cli).  Set at startup
+  ;; (not :custom, which would be deferred along with the package).
+  (setq agent-shell-preferred-agent-config 'pi)
+  :config
+  ;; Keep transcripts/screenshots out of project trees (~/.emacs.d/agent-shell/).
+  ;; Comment this out if you prefer the default .agent-shell/ in each project.
+  (defun my/agent-shell-dot-subdir (subdir)
+    "Return path to store agent-shell SUBDIR under `user-emacs-directory'."
+    (let* ((cwd (string-remove-suffix "/" (agent-shell-cwd)))
+           (sanitized (replace-regexp-in-string
+                       "/" "-" (string-remove-prefix "/" cwd))))
+      (expand-file-name subdir
+                        (locate-user-emacs-file
+                         (concat "agent-shell/" sanitized)))))
+  (setopt agent-shell-dot-subdir-function #'my/agent-shell-dot-subdir))
+#+END_SRC
+
+* Key-bindings
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "s-SPC") #'set-mark-command)
+  ;; Focus/jump to the treemacs pane (and back).  `treemacs-select-window'
+  ;; focuses it when visible elsewhere, unlike `treemacs' which would hide it.
+  (global-set-key (kbd "C-c l") #'treemacs-select-window)
+  (global-set-key (kbd "C-c c") #'comment-or-uncomment-region)
+  (global-set-key (kbd "C-c u") #'uncomment-region)
+
+  (global-set-key (kbd "C-c m c") #'mc/edit-lines)
+  (global-set-key (kbd "C->") #'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") #'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C-<") #'mc/mark-all-like-this)
+
+  (global-set-key (kbd "M-l") #'downcase-word)
+  (global-set-key (kbd "M-t") #'transpose-words)
+
+  (global-set-key (kbd "C-ñ") #'er/expand-region)
+  (global-set-key (kbd "C-?") #'er/contract-region)
+  (global-set-key (kbd "M-z") #'ace-window)
+
+  (global-set-key (kbd "C-x a") #'mode-line-other-buffer)
+  (global-set-key (kbd "C-c r") #'recompile)
+  (global-set-key (kbd "C-x c") #'compile)
+
+  (global-set-key (kbd "<s-right>") #'windmove-right)
+  (global-set-key (kbd "<s-left>") #'windmove-left)
+  (global-set-key (kbd "<s-up>") #'windmove-up)
+  (global-set-key (kbd "<s-down>") #'windmove-down)
+
+  (global-set-key (kbd "<M-s-down>") #'buf-move-down)
+  (global-set-key (kbd "<M-s-left>") #'buf-move-left)
+  (global-set-key (kbd "<M-s-right>") #'buf-move-right)
+  (global-set-key (kbd "<M-s-up>") #'buf-move-up)
+
+  (global-set-key "\C-s" #'swiper-isearch)
+  (global-set-key "\C-r" #'swiper-isearch-backward)
+  (global-set-key (kbd "C-x g") #'magit-status)
+  (global-set-key (kbd "C-. r") #'consult-recent-file)
+
+  (global-set-key (kbd "<C-S-return>") #'open-line-above)
+  (global-set-key (kbd "<C-return>") #'open-line-below)
+  (global-set-key (kbd "C-x DEL") #'delete-indentation)
+
+  ;; Insert a newline that keeps the current line's indentation, rather than
+  ;; letting the major mode's indent engine reformat the line.
+  (defun my/newline-and-keep-indent ()
+    "Insert a newline and keep the current line's indentation."
     (interactive)
-    (beginning-of-line)
-    (newline)
-    (forward-line -1)
-    (indent-for-tab-command))
-
-  (defun open-line-below ()
-    (interactive)
-    (end-of-line)
-    (newline)
-    (indent-for-tab-command))
-  #+END_SRC
-
-* Packages to Install
-
-  Packages to install and some settings.
-
-  #+BEGIN_SRC emacs-lisp
-
-  ;; list of my packages to have
-  ;; if you want to install a new package just add it to this list
-  ;; and then add your own configuration.
-  (setq packages-to-install
-	'(yasnippet
-	  dash
-	  expand-region
-	  multiple-cursors
-	  org-bullets
-	  iy-go-to-char
-	  helm
-	  autopair
-	  ace-jump-mode
-	  twittering-mode
-	  use-package
-	  php-mode
-	  multi-web-mode
-	  ace-window
-	  flycheck
-	  swiper
-	  undo-tree
-	  beacon
-	  neotree
-	  smart-mode-line
-	  magit
-	  theme-changer
-	  python-environment
-	  jedi
-	  zygospore
-	  projectile
-	  dumb-jump
-	  org-ac
-	  org
-	  eval-in-repl
-	  org-babel-eval-in-repl
-	  auto-complete-c-headers
-	  ac-php
-	  function-args
-	  irony
-	  google-translate
-	  smartparens
-	  buffer-move
-	  telephone-line
-	  pdf-tools
-	  anaconda-mode
-	  treemacs
-	  use-package
-	  which-key
-	  doom-themes
-	  company
-	  htmlize
-	  command-log-mode
-	  helm-ag
-	  yasnippet-snippets
-	  json-mode
-	  ))
-
-  ;; (ensure-package-installed packages-to-install) ;  --> (nil nil) if iedit and magit are already installed
-  ;; (ensure-package-installed 'iedit 'magit) ;  --> (nil nil) if iedit and magit are already installed
-
-  (dolist (pack packages-to-install)
-    (ensure-package-installed pack))
-
-  ;; setup packages
-  (require 'multiple-cursors)
-  (require 'buffer-move)
-  (require 'expand-region)
-  ;;  (require 'autopair)
-  (require 'iy-go-to-char)
-  (require 'ace-window)
-  (require 'helm-config)
-  (require 'org-bullets)
-  ;;  (require 'auto-indent-mode)
-  (require 'flycheck)
-  (require 'yasnippet)
-  (require 'dumb-jump)
-
-  ;;Global modes
-  (global-flycheck-mode)
-  (yas-global-mode t)
-  (global-hl-line-mode)
-  (tool-bar-mode -1)
-  (tool-bar-mode -1)
-  (show-paren-mode t)
-  (scroll-bar-mode -1)
-  (electric-indent-mode 1)
-  (column-number-mode t)
-  (electric-pair-mode 0)
-  (dumb-jump-mode 1)
-  ;;  (beacon-mode t)
-  (global-undo-tree-mode t)
-
-  ;; add hooks
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-  (add-hook 'term-mode-hook (lambda()
-			      (setq yas-dont-activate t)))
-
-  ;; auto-complete mode
-  ;;  (require 'auto-complete-config)
-  ;;(ac-config-default)
-  ;;  (ac-linum-workaround)
-
-  ;;Jedi for python ac
-  (add-hook 'python-mode-hook 'jedi:setup)
-  (add-hook 'python-mode-hook 'jedi:ac-setup)
-
-  ;; multi-web-mode
-  (require 'multi-web-mode)
-  (setq mweb-default-major-mode 'html-mode)
-  (setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
-		    (js-mode "<script +\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
-		    (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
-  (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5"))
-  (multi-web-global-mode 1)
-
-  (require 'browse-url)
-  (add-to-list 'browse-url-filename-alist
-	       '("/var/www/html/" . "http:localhost/"))
-
-  ;; pdf tools
-  (pdf-tools-install)
-
-  ;; smartparens
-  (require 'smartparens-config)
-  (smartparens-global-mode t)
-
-  ;; google-translate
-  (require 'google-translate)
-  (require 'google-translate-default-ui)
-  (global-set-key  "\C-cT" 'google-translate-at-point)
-  (global-set-key "\C-ct" 'google-translate-query-translate)
-
-
-  (add-hook 'text-mode-hook
-	    (lambda ()
-	      (variable-pitch-mode 1)))
-
-  ;; helm
-  (helm-mode 1)
-  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
-  (helm-autoresize-mode 1)
-
-  ;; which key
-  (which-key-mode 1)
-
-  ;; recent files
-  (recentf-mode 1)
-  (setq recentf-max-menu-items 25)
-  (setq recentf-max-saved-items 25)
-
-  #+END_SRC
-
-* key-bindings
-
-  #+BEGIN_SRC emacs-lisp
-  ;; treemacs
-  (global-set-key (kbd "C-c l") 'treemacs)
-
-  ;; comment/uncomment region
-  (global-set-key (kbd "C-c c") 'comment-or-uncomment-region)
-  (global-set-key (kbd "C-c u") 'uncomment-region)
-
-  ;; multiple cursors
-  (global-set-key(kbd "C-c m c") 'mc/edit-lines)
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
-  (global-set-key (kbd "C-c C-g") 'mc/unmark-previous-like-this)
-  (global-set-key (kbd "C-c C-n") 'mc/unmark-next-like-this)
-
-  ;; iy-go-to-char config
-  (global-set-key (kbd "M-m") 'iy-go-to-char)
-  (global-set-key (kbd "M-,") 'iy-go-to-char-backward)
-  (global-set-key (kbd "M-n") 'iy-go-to-or-up-to-continue)
-  (global-set-key (kbd "M-p") 'iy-go-to-or-up-to-continue-backward)
-  (global-set-key (kbd "M-l") 'downcase-word)
-  (global-set-key (kbd "M-t") 'transpose-words)
-
-  ;; expand region
-  (global-set-key (kbd "C-ñ") 'er/expand-region)
-  (global-set-key (kbd "C-*") 'pending-delete-mode)
-  (global-set-key (kbd "C-?") 'er/contract-region)
-
-  ;; ace-window
-  (global-set-key (kbd "M-z") 'ace-window)
-
-  ;; ace jump mod
-  (global-set-key (kbd "C-:") 'ace-jump-mode)
-  (global-set-key (kbd "C-x x") 'ace-jump-mode-pop-mark)
-
-  ;; move to the last recent buffer
-  (global-set-key (kbd "C-x a")  'mode-line-other-buffer)
-
-  ;; compile commands
-  (global-set-key (kbd "C-c r") 'recompile)
-  (global-set-key (kbd "C-x c") 'compile)
-
-  ;; helm
-  (global-set-key (kbd "M-x") 'helm-M-x)
-  (global-set-key (kbd "C-x <down>") 'helm-buffers-list)
-  (global-set-key (kbd "C-. ,") 'helm-find)
-  (global-set-key (kbd "C-. .") 'helm-ag-project-root)
-
-  ;; move windows, even in org-mode
-  (setq is-windows (equal system-type 'windows-nt))
-
-  (global-set-key (kbd "<s-right>") 'windmove-right)
-  (global-set-key (kbd "<s-left>") 'windmove-left)
-  (global-set-key (kbd "<s-up>") 'windmove-up)
-  (global-set-key (kbd "<s-down>") 'windmove-down)
-
-  ;; if we are on windows override windmove bindings
-  (when is-windows
-    (global-set-key (kbd "<M-right>") 'windmove-right)
-    (global-set-key (kbd "<M-left>") 'windmove-left)
-    (global-set-key (kbd "<M-up>") 'windmove-up)
-    (global-set-key (kbd "<M-down>") 'windmove-down))
-
-  ;; buffer-move
-  (global-set-key (kbd "<M-s-down>")   'buf-move-down)
-  (global-set-key (kbd "<M-s-left>")   'buf-move-left)
-  (global-set-key (kbd "<M-s-right>")  'buf-move-right)
-  (global-set-key (kbd "<M-s-up>")     'buf-move-up)
-
-  ;; swipper and ivy for searching regexp
-  (global-set-key "\C-s" 'swiper)
-					  ; (global-set-key (kbd "<f6>") 'ivy-resume)
-  ;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-  ;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-  ;; (global-set-key (kbd "<f1> l") 'counsel-load-library)
-  ;; (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-  ;; (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-  ;; (global-set-key (kbd "C-c g") 'counsel-git)
-  ;; (global-set-key (kbd "C-c j") 'counsel-git-grep)
-  ;; (global-set-key (kbd "C-c k") 'counsel-ag)
-  ;; (global-set-key (kbd "C-x l") 'counsel-locate)
-  ;; (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
-  ;; (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
-
-  ;; smartparens
-  (global-set-key (kbd "C-c (") 'wrap-with-brackets)
-  (global-set-key (kbd "C-c [" ) 'wrap-with-brackets)
-  (global-set-key (kbd "C-c {" ) 'wrap-with-braces)
-  (global-set-key (kbd "C-c '" ) 'wrap-with-single-quotes)
-  (global-set-key (kbd "C-c \"") 'wrap-with-double-quotes)
-  (global-set-key (kbd "C-c _" ) 'wrap-with-underscores)
-  (global-set-key (kbd "C-c `" ) 'wrap-with-back-quotes)
-
-  (global-set-key (kbd "M-[") 'sp-backward-unwrap-sexp)
-  (global-set-key (kbd "M-]") 'sp-unwrap-sexp)
-
-  ;; magit
-  (global-set-key (kbd "C-x g") 'magit-status)
-  (global-set-key (kbd "C-x p") 'magit-push)
-
-  ;; focus inmediately on new split window
-  (global-set-key "\C-x2" (lambda () (interactive)(split-window-vertically) (other-window 1)))
-  (global-set-key "\C-x3" (lambda () (interactive)(split-window-horizontally) (other-window 1)))
-
-  ;; recentf
-  (global-set-key (kbd "C-. r") 'recentf-open-files)
-
-  #+END_SRC
-
-* Ui stuff
-
-  #+BEGIN_SRC emacs-lisp
-    ;;  (set-face-background 'ac-candidate-face "grey7")
-    ;; (set-face-underline 'ac-candidate-face "darkgray")
-    ;;(set-face-background 'ac-selection-face "purple4")
-    ;;(set-face-foreground 'ac-candidate-face "green")
-
-    ;; apply transparency to emacs
-    (add-to-list 'default-frame-alist '(alpha . (100 . 100)))
-    (set-frame-parameter nil 'alpha '(100 . 100))
-
-    ;; telephone-line
-    (require 'telephone-line)
-    (setq telephone-line-primary-left-separator 'telephone-line-cubed-left
-	  telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
-	  telephone-line-primary-right-separator 'telephone-line-cubed-right
-	  telephone-line-secondary-right-separator 'telephone-line-gradient)
-    (setq telephone-line-height 15
-	  telephone-line-evil-use-short-tag t)
-
-    (setq telephone-line-primary-left-separator 'telephone-line-gradient
-	  telephone-line-secondary-left-separator 'telephone-line-nil
-	  telephone-line-primary-right-separator 'telephone-line-gradient
-	  telephone-line-secondary-right-separator 'telephone-line-nil)
-    (setq telephone-line-height 24
-	  telephone-line-evil-use-short-tag t)
-
-    (telephone-line-mode 1)
-
-    ;; hl-line
-
-    (global-hl-line-mode nil)
-    ;; (set-face-attribute
-    ;;  'hl-line
-    ;;  nil
-    ;;  :distant-foreground "OliveDrab1"
-    ;;  :background "IndianRed4")
-    (set-background-color "black")
-
-  #+END_SRC
-
-* Org mode stuff
-  
-  More info
-  - org-crypt: [[https://orgmode.org/worg/org-tutorials/encrypting-files.html]] 
-  #+BEGIN_SRC emacs-lisp
-
-  (require 'ox-latex)
-  (setq org-src-fontify-natively t) ;; to see highlighting in org src block
-
-  ;; helping with auto-complete on org mode
-  ;; (require 'org-ac)
-  ;; (org-ac/config-default)
-
-  ;; ;;   highlight code in code blocks and enable the evaluation of them
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((R . t)
-     (org . t)
-     (latex . t)
-     (emacs-lisp . t)
-     (gnuplot . t)
-     (C . t)
-     (shell . t)
-     (python . t)
-     ))
-
-  (require 'ox-latex)
-  (setq org-src-fontify-natively t) ;Can see higlighting in org mode file
-
-  ;; encryptions headlines in org mode
-  (require 'org-crypt)
-  (org-crypt-use-before-save-magic)
-  (setq org-tags-exclude-from-inheritance (quote ("crypt")))
-  ;; GPG key to use for encryption
-  ;; Either the Key ID or set to nil to use symmetric encryption.
-  (setq org-crypt-key nil)
-
-  ;; fancy priorities
-  (use-package org-fancy-priorities
-    :ensure t
-    :hook
-    (org-mode . org-fancy-priorities-mode)
-    :config
-    (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
-  #+END_SRC
-
-* More personal stuff
-  #+BEGIN_SRC emacs-lisp
-
-  ;; if you don't want my extra personal stuff just set the next var to nil
-  (setq personal_stuff t)
-
-  (defun extra_customize ()
-    "Extra personal stuff"
-
-    ;; projectile
-    (projectile-mode +1) 
-
-    (global-linum-mode -1)
-
-    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-    (global-set-key (kbd "<C-S-return>") 'open-line-above)
-    (global-set-key (kbd "<C-return>") 'open-line-below)
-    (define-key global-map (kbd "RET") 'newline-and-indent)
-
-    ;; minted for listings in export code docuements highlighting
-    (setq org-latex-listings 'minted
-	  org-latex-packages-alist '(("" "minted"))
-	  org-latex-pdf-process
-	  '("pdflatex -shell-escape -interaction bonstopmode -output-directory %o %f"
-	    "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
-
-    ;; python django
-
-    ;;    (add-hook 'python-mode-hook 'anaconda-mode)
-    ;;  (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
-
-    ;; ido-mode
-    (require 'ido)
-    (setq ido-enable-flex-matching t)
-    (ido-mode 1)
-
-    ;; amx
-    ;; (use-package amx
-    ;;  :ensure t
-    ;;  :config
-    ;;  (amx-mode t)
-    ;;  )
-
-    ;; ;; auto indent between {}, [], and () when pressing return in-between.
-    (defun indent-between-pair (&rest _ignored)
-    (newline)
-    (indent-according-to-mode)
-    (forward-line -1)
-    (indent-according-to-mode))
-
-    (sp-local-pair 'prog-mode "{" nil :post-handlers '((indent-between-pair "RET")))
-    (sp-local-pair 'prog-mode "[" nil :post-handlers '((indent-between-pair "RET")))
-    (sp-local-pair 'prog-mode "(" nil :post-handlers '((indent-between-pair "RET")))
-
-
-    ;; set monaco font even in org mode.
-    (set-face-attribute 'default nil :font "Monaco-12")
-    (set-face-attribute 'fixed-pitch nil :font "Monaco-16")
-    (set-face-attribute 'variable-pitch nil :font "Monaco-13")    
-    (dolist (face '(default fixed-pitch))
-    (set-face-attribute `,face nil :font "Monaco-14"))
-   
-    (set-face-background 'hl-line "DarkOliveGreen")
-    ;;To keep syntax highlighting in the current line:
-    (set-face-foreground 'highlight nil)
-    (set-face-foreground 'hl-line nil)
-
-    )
-
-  ;; (if personal_stuff (extra_customize) nil)
-  (when
-   personal_stuff
-    (extra_customize))
-
-  #+END_SRC
-
-* Javascript
-
-*** RJSX mode
-    #+BEGIN_SRC emacs-lisp
-  ;; (use-package rjsx-mode
-  ;;   :ensure t
-  ;;   :mode "\\.js\\'")
-    #+END_SRC
-    
-*** Typescript
-    #+BEGIN_SRC emacs-lisp
-      (use-package typescript-mode
-	:ensure t)
-    #+END_SRC
-
-*** Tide
-
-    #+BEGIN_SRC emacs-lisp
-  ;; (defun setup-tide-mode()
-  ;;   "Setup function for tide."
-  ;;   (interactive)
-  ;;   (tide-setup)
-  ;;   (flycheck-mode +1)
-  ;;   (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  ;;   (eldoc-mode +1)
-  ;;   (tide-hl-identifier-mode +1)
-  ;;   (company-mode +1)
-  ;; )
-  ;; (use-package tide
-  ;;   :ensure t
-  ;;   :after (rjsx-mode company flycheck)
-  ;;   :hook (rjsx-mode . setup-tide-mode))
-    #+END_SRC
-*** Prettier
-    #+BEGIN_SRC emacs-lisp
-  (use-package prettier-js
-    :ensure t
-    :after (rjsx-mode)
-    :hook (rjsx-mode . prettier-js-mode))
-    #+END_SRC
-
-*** lsp-mode
-    #+BEGIN_SRC emacs-lisp
-  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "C-q")
-
-  (use-package pyvenv
-    :ensure t
-    :diminish
-    :config
-    (setq pyvenv-mode-line-indicator
-	  '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] ")))
-    (pyvenv-mode +1))
-
-  (use-package lsp-mode
-      :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-	      (js-mode . lsp)
-	      (typescript-mode . lsp)
-	      (python-mode . lsp)
-	      ;; if you want which-key integration
-	      (lsp-mode . lsp-enable-which-key-integration))
-      :commands lsp
-      :config
-
-
-
-       ;; lsp extras
-      (use-package lsp-ui
-	:ensure t
-	:config
-	(setq lsp-ui-sideline-ignore-duplicate t)
-	(add-hook 'lsp-mode-hook 'lsp-ui-mode))
-
-      ;; local configurations
-      (add-hook 'hack-local-variables-hook
-	    (lambda () (when (derived-mode-p 'XXX-mode) (lsp))))
-	    )
-
-  ;; lsp-treemacs
-  (use-package lsp-treemacs
-    :ensure t
-    :config (lsp-treemacs-sync-mode 1))
-
-  ;; hl-todo-mode: for highlighting todo keywords
-  (use-package hl-todo
-    :ensure t
-    :config
-    (setq hl-todo-keyword-faces
-	  '(("todo"   . "#ffff00")))
-    (global-hl-todo-mode)
-    )
-    #+END_SRC
-
-*** Indium
-
-    #+BEGIN_SRC emacs-lisp
-  (use-package indium
-    :ensure t
-    )
-    #+END_SRC
-
-*** Vue
-    #+BEGIN_SRC emacs-lisp
-      (use-package vue-mode
-	:ensure t
-	:mode "\\.vue\\'"
-	:config
-	(add-hook 'vue-mode-hook #'lsp))
-    #+END_SRC
+    (let ((col (current-indentation)))
+      (newline)
+      (indent-to col)))
+  (define-key global-map (kbd "RET") #'my/newline-and-keep-indent)
+  (define-key global-map (kbd "s-2") #'duplicate-line)
+
+  (global-set-key
+   "\C-x2"
+   (lambda ()
+     (interactive)
+     (split-window-vertically)
+     (other-window 1)))
+
+  (global-set-key
+   "\C-x3"
+   (lambda ()
+     (interactive)
+     (split-window-horizontally)
+     (other-window 1)))
+
+  (define-key global-map (kbd "C-a") #'mwim-beginning)
+  (define-key global-map (kbd "C-e") #'mwim-end)
+
+  ;; PageUp/PageDown jump to the start/end of the buffer.
+  (global-set-key (kbd "C-x <prior>") #'beginning-of-buffer)
+  (global-set-key (kbd "C-x <next>") #'end-of-buffer)
+#+END_SRC
+
+* UI Stuff
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'default-frame-alist '(alpha . (90 . 90)))
+(set-frame-parameter nil 'alpha '(90 . 90))
+(set-background-color "black")
+#+END_SRC
+
+* Org Mode
+#+BEGIN_SRC emacs-lisp
+(require 'org)
+(require 'ox-latex)
+
+(setq org-src-fontify-natively t)
+
+;; These are built-in Org Babel languages.
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((R . t)
+   (org . t)
+   (latex . t)
+   (emacs-lisp . t)
+   (gnuplot . t)
+   (C . t)
+   (shell . t)
+   (python . t)
+   (js . t)
+   (sql . t)))
+
+(require 'org-crypt)
+(org-crypt-use-before-save-magic)
+
+(setq org-tags-exclude-from-inheritance '("crypt"))
+(setq org-crypt-key nil)
+(setq org-log-done t)
+
+(use-package org-fancy-priorities
+  :ensure t
+  :hook (org-mode . org-fancy-priorities-mode)
+  :custom
+  (org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
+
+(setq org-clock-persist 'history)
+(org-clock-persistence-insinuate)
+
+(add-to-list 'org-emphasis-alist
+             '("*" (:foreground "dark cyan")))
+#+END_SRC
+
+* Custom Environment & IDE Setup
+#+BEGIN_SRC emacs-lisp
+(setq personal-stuff t)
+
+(defun my/org-personal-setup ()
+  "Apply personal Org configuration."
+  (setq org-latex-listings 'minted
+                org-latex-packages-alist '(("" "minted"))
+        org-latex-pdf-process
+        '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+          "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+
+  (set-face-attribute 'variable-pitch nil :font "Monaco-14")
+
+  (setq org-startup-indented t
+        org-pretty-entities t
+        org-hide-emphasis-markers t
+        org-startup-with-inline-images t
+        org-image-actual-width '(300))
+
+  (setq org-todo-keywords
+        '((sequence
+           "TODO"
+           "FEEDBACK"
+           "VERIFY"
+           "INPROGRESS"
+           "DEPENDENT"
+           "|"
+           "PAUSED"
+           "DONE"
+           "BLOCKED"
+           "CANCELED"))))
+
+(when personal-stuff
+  (my/org-personal-setup))
+#+END_SRC
+
+* Compilation Output
+#+BEGIN_SRC emacs-lisp
+(add-hook
+ 'compilation-filter-hook
+ (lambda ()
+   (when (and (boundp 'compilation-filter-start)
+              compilation-filter-start)
+     (ansi-color-apply-on-region
+      compilation-filter-start
+      (point)))))
+#+END_SRC
+
+* Blamer
+#+BEGIN_SRC emacs-lisp
+(use-package blamer
+  :ensure t
+  :defer 10
+  :custom
+  (blamer-idle-time 0.5)
+  (blamer-min-offset 70)
+  :config
+  (global-blamer-mode -1)
+  :bind
+  (("s-i" . blamer-show-commit-info)))
+#+END_SRC
+
+* Vertico / Orderless / Marginalia / Consult
+#+BEGIN_SRC emacs-lisp
+(use-package vertico
+  :ensure t
+  :defer nil
+  :init
+  (vertico-mode)
+  :custom
+  (vertico-count 10)
+  (vertico-resize nil)
+  (vertico-cycle t))
+
+(use-package orderless
+  :ensure t
+  :defer nil
+  :init
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides
+        '((file (styles partial-completion)))))
+
+(use-package marginalia
+  :ensure t
+  :defer nil
+  :init
+  (marginalia-mode)
+  :custom
+  (marginalia-max-relative-age 0))
+
+(use-package consult
+  :ensure t
+  :defer nil
+  :commands
+  (consult-buffer
+   consult-recent-file
+   consult-bookmark
+   consult-ripgrep
+   consult-line)
+  :bind
+  (("C-x b" . consult-buffer)
+   ("M-y" . consult-yank-pop)
+   ("M-s r" . consult-ripgrep)
+   ("M-s l" . consult-line))
+  :config
+  (consult-customize
+   consult-buffer
+   consult-recent-file
+   consult-bookmark
+   consult-ripgrep
+   consult-line
+   :preview-key nil)
+
+  (setq consult-buffer-filter
+        '("\\` "
+          "\\`\\*Completions\\*\\'"
+          "\\`\\*Compile-Log\\*\\'"
+          "\\`\\*lsp-log\\*\\'"
+          "\\`\\*vterm\\*\\'"))
+
+  (setq consult-preview-max-size (* 512 1024))
+
+  (setq consult-preview-excluded-files
+        '("\\.png\\'"
+          "\\.jpg\\'"
+          "\\.jpeg\\'"
+          "\\.pdf\\'"
+          "\\.tar\\.gz\\'")))
+
+(defun consult-ag--with-symbol ()
+  "Run consult-ripgrep for the symbol at point."
+  (interactive)
+  (if (fboundp 'consult-ripgrep)
+      (consult-ripgrep nil (thing-at-point 'symbol))
+    (when (fboundp 'consult-line)
+      (consult-line (thing-at-point 'symbol)))))
+
+(global-set-key (kbd "C-. .") #'consult-ag--with-symbol)
+#+END_SRC
+
+* Midnight / Winner
+#+BEGIN_SRC emacs-lisp
+(use-package midnight
+  :ensure nil
+  :defer nil
+  :custom
+  (clean-buffer-list-delay-general 1)
+  :config
+  (midnight-mode 1))
+
+(winner-mode 1)
+(require 'thingatpt)
+#+END_SRC
+
+* Dired
+#+BEGIN_SRC emacs-lisp
+(require 'ls-lisp)
+
+(setq ls-lisp-dirs-first t
+      ls-lisp-use-insert-directory-program nil)
+
+(add-hook 'dired-mode-hook #'dired-hide-details-mode)
+#+END_SRC
+
+* Display & Scrolling
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute 'default nil :height 165)
+
+(when (fboundp 'pixel-scroll-precision-mode)
+  (pixel-scroll-precision-mode 1))
+#+END_SRC
+
+* IDE Configuration: Corfu + Cape + Tree-sitter + Eglot
+#+BEGIN_SRC emacs-lisp
+(use-package corfu
+  :ensure t
+  :defer nil
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.1)
+  (corfu-auto-prefix 2)
+  (corfu-cycle t)
+  :init
+  (global-corfu-mode))
+
+(use-package cape
+  :ensure t
+  :defer nil
+  :config
+  ;; `completion-at-point-functions' is buffer-local, so a top-level
+  ;; `add-to-list' only affects the buffer current during startup.  Add the
+  ;; backends per-buffer, after the major mode, via a mode hook instead.
+  (defun my-cape-setup ()
+    "Add Cape completion backends to the buffer-local Capf."
+    (add-hook 'completion-at-point-functions #'cape-dabbrev nil t)
+    (add-hook 'completion-at-point-functions #'cape-file nil t))
+  (add-hook 'prog-mode-hook #'my-cape-setup)
+  (add-hook 'text-mode-hook #'my-cape-setup))
+
+(use-package treesit-auto
+  :ensure t
+  :defer nil
+  :custom
+  ;; Ask before installing a grammar when a language actually needs it.
+  (treesit-auto-install 'prompt)
+  :config
+  (global-treesit-auto-mode 1))
+
+(setq treesit-font-lock-level 4)
+
+;; astro-ls (Volar-based) requires an explicit TypeScript SDK path and
+;; rejects a workspace that only has TypeScript 7 (which no longer ships
+;; typescript.js).  Point it at the nearest node_modules/typescript/lib
+;; that still contains typescript.js.
+(defun my/find-typescript-tsdk (start)
+  "Return nearest `node_modules/typescript/lib' under START with typescript.js."
+  (let ((dir (file-name-as-directory (expand-file-name start))) found)
+    (while (and (not found)
+                (not (equal dir (file-name-directory (directory-file-name dir)))))
+      (let ((cand (expand-file-name "node_modules/typescript/lib" dir)))
+        (when (file-exists-p (expand-file-name "typescript.js" cand))
+          (setq found cand)))
+      (setq dir (file-name-directory (directory-file-name dir))))
+    found))
+
+(defun my/astro-ls-contact (_interactive project)
+  "Eglot contact for astro-ls, injecting the project's TypeScript SDK."
+  (list "astro-ls" "--stdio"
+        :initializationOptions
+        (list :typescript
+              (list :tsdk (or (my/find-typescript-tsdk default-directory)
+                              (expand-file-name "node_modules/typescript/lib"
+                                                (project-root project)))))))
+
+;; Eglot is built into modern Emacs versions, so do not install a
+;; second copy from ELPA/MELPA.
+(use-package eglot
+  :ensure nil
+  :defer nil
+  :hook
+  ((typescript-ts-mode . eglot-ensure)
+   (tsx-ts-mode . eglot-ensure)
+   (js-ts-mode . eglot-ensure)
+   (js-mode . eglot-ensure)
+   (astro-ts-mode . eglot-ensure))
+  :config
+  ;; eglot-typescript-preset (installed via package-selected-packages) adds
+  ;; its own eglot-server-programs entry at after-init, defaulting to
+  ;; `typescript-language-server'.  Since it is added after this config it
+  ;; shadows the tsgo entry below and would fail on workspaces using
+  ;; TypeScript 7 (no tsserver.js).  Disable its auto-setup.
+  (setq eglot-typescript-preset-auto-setup nil)
+  ;; Use the TypeScript 7 native server (tsgo) directly.  Going through
+  ;; rassumfrassum as a multiplexer kept aborting the whole session when a
+  ;; server exited, so rass is not used at all.
+  (add-to-list 'eglot-server-programs
+               '(((js-mode :language-id "javascript")
+                  (js-ts-mode :language-id "javascript")
+                  (typescript-ts-mode :language-id "typescript")
+                  (tsx-ts-mode :language-id "typescriptreact"))
+                 . ("tsgo" "--lsp" "--stdio")))
+  ;; Astro language server (astro-ls).  Install globally with
+  ;;   bun add -g @astrojs/language-server
+  (add-to-list 'eglot-server-programs
+               (cons 'astro-ts-mode #'my/astro-ls-contact)))
+#+END_SRC
+
+* JavaScript / TypeScript Modes
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js-ts-mode))
+
+;; Astro: tree-sitter major mode; Eglot + oxlint hooks are set above.
+;; If `treesit-ready-p' for `astro' is nil, run once:
+;;   M-x astro-ts-mode-install-parsers
+(use-package astro-ts-mode
+  :ensure t
+  :mode ("\\.astro\\'" . astro-ts-mode))
+#+END_SRC
+
+* Format on Save (oxfmt)
+#+BEGIN_SRC emacs-lisp
+;; Run oxfmt directly on save for JS/TS files.  This keeps formatting out
+;; of the LSP multiplexer, which is fragile (see the Eglot preset above).
+(defun my/oxfmt-buffer ()
+  "Format the current buffer with oxfmt, leaving it unchanged on failure."
+  (when (and buffer-file-name
+             (executable-find "oxfmt")
+             (derived-mode-p 'js-mode 'js-ts-mode
+                             'tsx-ts-mode 'typescript-ts-mode))
+    (let ((out (get-buffer-create " *oxfmt*")))
+      (with-current-buffer out (erase-buffer))
+      (let ((status (call-process-region
+                     (point-min) (point-max) "oxfmt" nil out nil
+                     "--stdin-filepath" buffer-file-name)))
+        (when (and (integerp status) (zerop status))
+          (let ((pt (point)))
+            (erase-buffer)
+            (insert-buffer-substring out)
+            (goto-char (min pt (point-max))))))
+      (kill-buffer out))))
+
+(add-hook 'before-save-hook #'my/oxfmt-buffer)
+#+END_SRC
+
+* Startup Cleanup
+#+BEGIN_SRC emacs-lisp
+;; Restore a more reasonable GC threshold after startup.
+(add-hook
+ 'emacs-startup-hook
+ (lambda ()
+   (setq gc-cons-threshold (* 16 1024 1024))))
+
+;; Useful when diagnosing startup regressions.
+(add-hook
+ 'emacs-startup-hook
+ (lambda ()
+   (message
+    "Emacs loaded in %.2f seconds with %d garbage collections."
+    (float-time
+     (time-subtract after-init-time before-init-time))
+    gcs-done)))
+#+END_SRC

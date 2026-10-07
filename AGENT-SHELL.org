@@ -1,0 +1,216 @@
+#+TITLE: agent-shell Guide
+#+AUTHOR: aang
+#+STARTUP: overview
+#+PROPERTY: header-args :eval never
+
+A native Emacs shell for LLM coding agents that speak ACP (Agent Client
+Protocol).  One interface, any agent: Pi, Gemini CLI, Claude Agent, Codex,
+Goose, Cursor, OpenCode, and more.
+
+Package: [[https://github.com/xenodium/agent-shell][xenodium/agent-shell]] (MELPA) — by Álvaro Ramírez.
+Internally built on =shell-maker= and =acp.el=.
+
+* Setup (already done)
+
+Installed into =~/.emacs.d/packages/= via MELPA:
+
+- =agent-shell= (plus deps =acp= and =shell-maker=)
+
+Configuration lives in the source of truth =setup.org= (section
+"Agent Shell"), from which =setup.el= is tangled at startup:
+
+#+BEGIN_SRC emacs-lisp
+(use-package agent-shell
+  :ensure t
+  :defer t
+  :bind (("C-c a" . agent-shell)          ; start/reuse a shell
+         ("C-c A" . agent-shell-prompt-compose))
+  :init
+  ;; Default agent for `M-x agent-shell'.  Identifiers live in
+  ;; `agent-shell-agent-configs' (e.g. 'pi, 'gemini-cli).
+  (setq agent-shell-preferred-agent-config 'pi)
+  :config
+  ;; Keep transcripts/screenshots out of project trees
+  ;; (~/.emacs.d/agent-shell/ instead of .agent-shell/ per project).
+  (defun my/agent-shell-dot-subdir (subdir)
+    "Return path to store agent-shell SUBDIR under `user-emacs-directory'."
+    (let* ((cwd (string-remove-suffix "/" (agent-shell-cwd)))
+           (sanitized (replace-regexp-in-string
+                       "/" "-" (string-remove-prefix "/" cwd))))
+      (expand-file-name subdir
+                        (locate-user-emacs-file
+                         (concat "agent-shell/" sanitized)))))
+  (setopt agent-shell-dot-subdir-function #'my/agent-shell-dot-subdir))
+#+END_SRC
+
+Note: the preferred agent is set in =:init= rather than =:custom= because
+=:custom= on a deferred package would only apply after the package loads.
+
+* Prerequisites
+
+Each agent needs its own ACP adapter / CLI on =PATH=.  On this machine:
+
+- =pi-acp= — already installed
+- =gemini= — already installed
+
+Others (install only what you use):
+
+#+BEGIN_SRC sh
+npm install -g pi-acp
+npm install -g @agentclientprotocol/claude-agent-acp   # Claude
+npm install -g @agentclientprotocol/codex-acp          # Codex
+# ... plus the agent's own CLI/login where required
+#+END_SRC
+
+Optional image tools:
+
+- macOS clipboard paste: =brew install pngpaste=
+- macOS screenshots: =screencapture= (preinstalled)
+
+* Using it
+
+** Starting
+
+| Command / key              | Action                                        |
+|----------------------------+-----------------------------------------------|
+| =M-x agent-shell= / =C-c a= | Start or reuse a shell; asks which agent      |
+| =C-u M-x agent-shell=       | Force a new session (multiple shells)         |
+| =M-x agent-shell-pi-start-agent=    | Start a Pi session directly           |
+| =M-x agent-shell-google-start-gemini= | Start a Gemini CLI session directly |
+| =C-c A= / =M-x agent-shell-prompt-compose= | Compose in a dedicated buffer  |
+
+** In the shell
+
+| Key              | Action                                          |
+|------------------+-------------------------------------------------|
+| =RET=             | Submit prompt                                   |
+| =M-J=             | Insert newline without submitting               |
+| =C-c C-c=         | Interrupt the running turn                      |
+| =TAB= / =S-TAB=   | Move between interactive elements               |
+| =C-c C-v=         | Set model                                       |
+| =C-c C-m=         | Set session mode                                |
+| =C-c C-t=         | Set thought (reasoning) level                   |
+| =C-<tab>=         | Cycle session mode                              |
+| =C-c C-o=         | Open the viewport                               |
+
+A prompt sent while the agent is busy is *queued* by default.  =M-RET=
+(or =C-u RET=) *steers* the running turn instead, for agents that support
+it.  The header shows the current model / mode / thought level; click a
+segment to change it.
+
+** Viewport vs. compose
+
+The shell is an append-only transcript, so both tools exist to focus on
+one thing at a time:
+
+- *Viewport* (=C-c C-o=) — read/compose *one interaction at a time* in a
+  separate =[viewport]= buffer.
+  - View mode: =r= reply, =R= quoted reply, =b= / =f= prev/next
+    interaction, =p= / =n= prev/next item, =?= help, =q= bury.
+  - Edit mode: =C-c C-c= send/queue, =C-u C-c C-c= send but keep open,
+    =C-c C-p= peek, =C-c C-k= cancel, =C-c C-h= help.
+- *Compose* (=C-c A=) — write the prompt in a dedicated buffer with full
+  Emacs editing; nothing sends until =C-c C-c=.  Keeps drafts while the
+  agent is busy.
+
+Make the viewport the default entry point:
+
+#+BEGIN_SRC emacs-lisp
+(setopt agent-shell-prefer-viewport-interaction t)
+#+END_SRC
+
+** Attachments
+
+- =M-x agent-shell-send-clipboard-image= — paste a clipboard image.
+- =M-x agent-shell-send-screenshot= — capture the screen.
+- Drag a file from =dired= / Finder onto the shell to attach as =@path=.
+
+** Closing, resuming, and forking sessions
+
+Closing
+
+- Kill the shell buffer (=C-x k=) to shut down the ACP client / agent
+  process.  The transcript is already saved under
+  =~/.emacs.d/agent-shell/<project>/= and the agent keeps the session
+  server-side, so it can be resumed later.
+- =M-x agent-shell-restart= clears the conversation: kills the buffer
+  and starts a fresh session in the same project with the same agent.
+- =M-x agent-shell-reload= restarts the current session with the *same*
+  session ID (useful after changing config).
+
+Resuming
+
+- Easiest: run =C-c a= / =M-x agent-shell= again.  With the default
+  =agent-shell-session-strategy= of ='prompt=, it asks you to pick an
+  existing session for that agent/project or start a new one.
+- Make it automatic:
+  #+BEGIN_SRC emacs-lisp
+  (setq agent-shell-session-strategy 'latest)  ; or 'new, 'prompt (default)
+  #+END_SRC
+- By ID: =M-x agent-shell-resume-session= prompts for a session ID.
+  Get one with =M-x agent-shell-copy-session-id=, or set
+  =agent-shell-show-session-id= to show IDs in the header.
+- =M-x agent-shell-fork= branches the current conversation into a new
+  shell (only for agents that advertise session forking).
+- How much history is replayed on resume is controlled by
+  =agent-shell-session-restore-verbosity=:
+  - =minimal= (default) — session title only, fast and quiet.
+  - =last= — just the last prompt/response turn.
+  - =first-last= — first and last turns.
+  - =full= — replay the whole conversation.
+
+** Inserting code context
+
+- Region: =M-x agent-shell-send-region= inserts the selection as a
+  =file:line-start-line-end= link plus a short numbered preview.
+  =agent-shell-send-region-to= prompts which shell to use.
+- DWIM: =M-x agent-shell-send-dwim= sends the region, or the error at
+  point (Flycheck), or the current line, to the project's last-used
+  shell.  =C-u= starts a new shell; =C-u C-u= lets you pick one.
+- Whole files: =agent-shell-send-file= / =agent-shell-send-file-to=,
+  =agent-shell-send-current-file=, =agent-shell-send-other-file=,
+  =agent-shell-insert-file=.
+- Shell output: =agent-shell-insert-shell-command-output= runs a
+  command and inserts its output as a code block.
+- At the prompt: type =@= for file-name completion
+  (=agent-shell-completion-mode=), or drag a file from =dired= /
+  Finder, to insert an =@path= link.
+- Automatic: =C-c C-w= (the package's default binding for
+  =agent-shell=) pulls context from the source buffer according to
+  =agent-shell-context-sources= (=files=, =region=, =error=, =line=).
+- To quote the region into the *latest* prompt instead: =r=
+  (=agent-shell-quote-region=) inside the shell.
+
+** Adding / switching agents
+
+Change the default:
+
+#+BEGIN_SRC emacs-lisp
+(setq agent-shell-preferred-agent-config 'claude-code)  ; or 'gemini-cli, 'codex, ...
+#+END_SRC
+
+Identifiers are the =:identifier= values in =agent-shell-agent-configs=
+(22 configs ship by default).
+
+* Customization pointers
+
+- =agent-shell-*-environment= — pass env vars (use
+  =agent-shell-make-environment-variables=).
+- =agent-shell-mcp-servers= — configure MCP servers once for all agents.
+- =agent-shell-dot-subdir-function= — where per-project data is stored
+  (already redirected to =~/.emacs.d/agent-shell/=).
+- =agent-shell-command-prefix= — run agents inside Docker/devcontainers.
+- =agent-shell-mode-hook= + =agent-shell-subscribe-to= — react to events
+  (turn complete, tool calls, config changes).
+
+Full docs: package README and =C-h f agent-shell-subscribe-to=.
+
+* Housekeeping
+
+Per-project agent data now lives under =~/.emacs.d/agent-shell/=, so it
+shows up as untracked in this repo.  Consider adding to =.gitignore=:
+
+#+BEGIN_SRC text
+/agent-shell/
+/agent/
+#+END_SRC
