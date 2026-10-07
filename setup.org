@@ -1,6 +1,6 @@
 #+TITLE: Emacs Configuration
 #+STARTUP: overview
-#+PROPERTY: header-args:emacs-lisp :comments yes :results silent :lexical t
+#+PROPERTY: header-args:emacs-lisp :comments no :results silent :lexical t
 
 * Pre-requisites
 These are some of the programs I had to install to get some of the packages utilities working as expected.
@@ -17,7 +17,13 @@ These are some of the programs I had to install to get some of the packages util
   brew install --cask emacs-plus-app
 #+END_SRC
 
-* Header Cookie for Lexical Binding
+* Lexical Binding
+Emacs only honors the file-local cookie on line 1 of the tangled
+=setup.el=.  Keep this the first Emacs Lisp block and leave
+=:comments no= in the file header, otherwise the tangle prepends a
+=;; [[file:...]]= comment and the cookie lands on line 2, silently
+disabling lexical binding for the whole configuration.
+
 #+BEGIN_SRC emacs-lisp
 ;; -*- lexical-binding: t; -*-
 #+END_SRC
@@ -46,11 +52,10 @@ These are some of the programs I had to install to get some of the packages util
 #+BEGIN_SRC emacs-lisp
   (require 'package)
 
-  (setq package-archives
-        '(("gnu"   . "https://elpa.gnu.org/packages/")
-          ("melpa" . "https://melpa.org/packages/")))
-
-  (package-initialize)
+  ;; `init.el' owns `package-user-dir' and `package-archives' and already
+  ;; calls `package-initialize' before loading this file.  Calling it again
+  ;; here would reset `load-path' from a different package directory and
+  ;; trigger "Unnecessary call to `package-initialize'" at startup.
 
   ;; Install a package only when it is actually missing.
   ;; This avoids refreshing package archives on every startup.
@@ -97,8 +102,8 @@ These are some of the programs I had to install to get some of the packages util
   (setq ring-bell-function 'ignore)
   (setq visible-bell t)
   (set-face-attribute 'default nil
-                      :font "Monaco"
-                      :height 130
+                      :font "JetBrainsMono Nerd Font Mono"
+                      :height 140
                       :weight 'medium)
   ;;(setq ns-use-thin-smoothing t)
   ;; exec-path-from-shell rápido
@@ -225,10 +230,12 @@ With another prefix argument, insert an absolute path."
         (cons 'javascript-oxlint
               (delq 'javascript-oxlint flycheck-checkers)))
   ;; oxlint also lints the <script> frontmatter of .astro files, so teach
-  ;; the checker about `astro-ts-mode'.
-  (setf (flycheck-checker-get 'javascript-oxlint 'modes)
-        (cons 'astro-ts-mode
-              (flycheck-checker-get 'javascript-oxlint 'modes)))
+  ;; the checker about `astro-ts-mode'.  Use the public `flycheck-add-mode'
+  ;; instead of `(setf (flycheck-checker-get ...))': that place's setter
+  ;; comes from a `gv-define-setter' that is only registered once flycheck
+  ;; loads, so the `setf' macro-expands to a call to the nonexistent
+  ;; function `(setf flycheck-checker-get)' and fails at `:config' time.
+  (flycheck-add-mode 'javascript-oxlint 'astro-ts-mode)
   (dolist (hook '(js-mode-hook js-ts-mode-hook
                   typescript-ts-mode-hook tsx-ts-mode-hook
                   astro-ts-mode-hook))
@@ -397,6 +404,19 @@ With another prefix argument, insert an absolute path."
 ;; Glyphs need the "Symbols Nerd Font Mono" font once: M-x nerd-icons-install-fonts
 #+END_SRC
 
+* Winpulse
+#+BEGIN_SRC emacs-lisp
+;; Flash the focused window's background on focus change.
+(use-package winpulse
+  :ensure t
+  :defer nil
+  :custom
+  (winpulse-brightness 20)
+  (winpulse-duration 0.62)
+  :config
+  (winpulse-mode 1))
+#+END_SRC
+
 * PDF Tools
 #+BEGIN_SRC emacs-lisp
 ;; Do not initialize pdf-tools during startup.
@@ -523,6 +543,10 @@ With another prefix argument, insert an absolute path."
 
   (define-key global-map (kbd "C-a") #'mwim-beginning)
   (define-key global-map (kbd "C-e") #'mwim-end)
+
+  ;; PageUp/PageDown jump to the start/end of the buffer.
+  (global-set-key (kbd "C-x <prior>") #'beginning-of-buffer)
+  (global-set-key (kbd "C-x <next>") #'end-of-buffer)
 #+END_SRC
 
 * UI Stuff

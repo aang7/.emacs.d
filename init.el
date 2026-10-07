@@ -19,6 +19,10 @@
       (expand-file-name "packages" user-emacs-directory))
 
 ;; Inicializar el sistema de paquetes
+;; `treesit-ready-p' no está autoloaded, pero los autoloads generados de
+;; `astro-ts-mode' lo llaman a nivel superior.  Cargar `treesit' antes de
+;; `package-initialize' evita el error "void-function treesit-ready-p".
+(require 'treesit)
 (package-initialize)
 
 ;; Forzar la descarga del índice si está vacío
